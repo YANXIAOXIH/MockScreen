@@ -151,8 +151,32 @@ downloadBtn.addEventListener('click', () => {
         alert("请先选择一个模板！");
         return;
     }
+    // --- 日期格式化逻辑 ---
+
+    // 1. 获取当前日期和时间
+    const now = new Date();
+
+    // 2. 格式化日期和时间的各个部分，并确保它们是两位数 (例如 09 而不是 9)
+    //    String.padStart(2, '0') 的作用就是如果字符串不足两位，就在前面补 '0'
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0'); // 月份是从0开始的(0-11)，所以需要+1
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+
+    // 3. 将格式化后的部分拼接成一个完整的文件名字符串
+    //    格式如: alipay-success_2025-10-27_19-30-55.png
+    const fileName = `${templateSelect.value}_${year}-${month}-${day}_${hours}-${minutes}-${seconds}.png`;
+
+    // --- 结束新增的日期格式化逻辑 ---
+
+
     const link = document.createElement('a');
-    link.download = `${templateSelect.value}-generated.png`;
+    
+    // 4. 使用我们新生成的、包含日期的文件名
+    link.download = fileName; 
+    
     link.href = canvas.toDataURL('image/png');
     link.click();
 });

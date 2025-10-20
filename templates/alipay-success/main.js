@@ -70,17 +70,15 @@ export const template = {
 
         // --- 顶部状态栏 ---
         statusBar: { 
-            y: 50,             // 整个状态栏的垂直位置 (Y坐标)
+            baseY: 74,             // 整个状态栏的垂直位置 (Y坐标)
             timeX: 65,         // 左侧时间的水平位置 (X坐标)
-            timeFont: 'bold 48px "PingFang"', // 时间的字体样式
+            timeFont: 'bold 50px "PingFang"', // 时间的字体样式
             iconstartX: 205,   // 第一个状态图标的起始X坐标
-            IconY: 55,         // 所有状态图标的Y坐标
             iconsize: 40,      // 状态图标的边长 (正方形)
-            IconGap: 8,       // 状态图标之间的间
+            IconGap: 9,       // 状态图标之间的间
             batteryX: 1040,    // 电池图标的X坐标
-            batteryY: 57,      // 电池图标的Y坐标
-            batteryWidth: 67,  // 电池图标主体的宽度
-            batteryHeight: 34  // 电池图标主体的高度
+            batteryWidth: 67,      // 电池图标主体的宽度
+            batteryHeight: 34      // 电池图标主体的高度
         },
 
         // --- 核心支付信息 ---
@@ -102,8 +100,8 @@ export const template = {
         // --- 底部奖励模块 ---
         rewards: { 
             startY: 952,        // 第一个奖励模块图片的起始 Y 坐标
-            startX: 58,  // 奖励模块的水平位置 (X坐标)
-            gap: 66 //奖励模块之间的垂直间距 (空隙)
+            startX: 58,         // 奖励模块的水平位置 (X坐标)
+            gap: 66             // 奖励模块之间的垂直间距 (空隙)
         },
 
         // --- 颜色配置 ---
@@ -138,7 +136,7 @@ export const template = {
 
             <div class="input-group">
                 <label>电池电量: <span class="control-value" data-id="batteryValue">100</span>%</label>
-                <input type="range" class="control" data-id="battery" min="0" max="100" value="100">
+                <input type="range" class="control" data-id="battery" min="0" max="100" value="68">
             </div>
         </fieldset>
 
@@ -152,9 +150,9 @@ export const template = {
                 <div class="quick-buttons">
                     <button data-target="methodInput" data-value="余额宝 (转出资金付款)">余额宝</button>
                     <button data-target="methodInput" data-value="余额">余额</button>
-                    <button data-target="methodInput" data-value="花呗">花呗</button>
-                    <button data-target="methodInput" data-value="招商银行储蓄卡(5812)">招商银行</button>
-                    <button data-target="methodInput" data-value="光大银行信用卡(6820)">光大银行</button>
+                    <button data-target="methodInput" data-value="花呗 (分期6期)">花呗</button>
+                    <button data-target="methodInput" data-value="招商银行储蓄卡 (5812)">招商银行</button>
+                    <button data-target="methodInput" data-value="光大银行信用卡 (6820)">光大银行</button>
                 </div>
             </div>
             <div class="input-group checkbox-group"><input type="checkbox" class="control" data-id="deductionToggle"><label>随机立减</label><input type="text" class="control" data-id="deductionAmount" value="0.08" style="width: 80px;"></div>
@@ -190,19 +188,38 @@ export const template = {
         ctx.fillStyle = config.colors.statusBar; 
         ctx.font = st.timeFont;
         ctx.textAlign = 'left'; 
-        ctx.textBaseline = 'top'; 
-        ctx.fillText(controls.time, st.timeX, st.y);
+        ctx.textBaseline = 'middle'; // 设置文本的垂直对齐基线为中心
+        ctx.fillText(controls.time, st.timeX, st.baseY);
         
-        // 依次绘制状态图标，每画一个，下一个的X坐标就向右移动
+        // 【核心修改】动态计算图标的 Y 坐标，使其垂直居中于 baseY
+        const iconY = st.baseY - (st.iconsize / 2);
+        
+        // 依次绘制状态图标，使用计算出的 iconY
         let currentIconX = st.iconstartX;
-        if (controls.locationToggle && assets.locationIcon) { ctx.drawImage(assets.locationIcon, currentIconX, st.IconY, st.iconsize, st.iconsize); currentIconX += st.iconsize + st.IconGap; }
-        if (controls.alarmIconToggle && assets.alarmIcon) { ctx.drawImage(assets.alarmIcon, currentIconX, st.IconY, st.iconsize, st.iconsize); currentIconX += st.iconsize + st.IconGap; }
-        if (controls.userIconToggle && assets.userIcon) { ctx.drawImage(assets.userIcon, currentIconX, st.IconY, st.iconsize, st.iconsize); }
-        if (controls.sleepIconToggle && assets.sleepIcon) { ctx.drawImage(assets.sleepIcon, currentIconX, st.IconY, st.iconsize, st.iconsize); }
-        
+        if (controls.locationToggle && assets.locationIcon) { 
+            ctx.drawImage(assets.locationIcon, currentIconX, iconY, st.iconsize, st.iconsize); 
+            currentIconX += st.iconsize + st.IconGap; 
+        }
+        if (controls.alarmIconToggle && assets.alarmIcon) { 
+            ctx.drawImage(assets.alarmIcon, currentIconX, iconY, st.iconsize, st.iconsize); 
+            currentIconX += st.iconsize + st.IconGap; 
+        }
+        if (controls.userIconToggle && assets.userIcon) { 
+            ctx.drawImage(assets.userIcon, currentIconX, iconY, st.iconsize, st.iconsize); 
+            currentIconX += st.iconsize + st.IconGap;
+        }
+        if (controls.sleepIconToggle && assets.sleepIcon) { 
+            ctx.drawImage(assets.sleepIcon, currentIconX, iconY, st.iconsize, st.iconsize); 
+        }
+
         // 绘制电池
-        if (controls.battery > 0) { const fillWidth = (st.batteryWidth - 10) * (controls.battery / 100); drawRoundedRect(ctx, st.batteryX + 5, st.batteryY + 5, fillWidth, st.batteryHeight - 10, 4); ctx.fill(); }
-        
+        const batteryY = st.baseY - st.batteryHeight / 2; 
+        if (controls.battery > 0) { 
+            const fillWidth = (st.batteryWidth - 10) * (controls.battery / 100); 
+            drawRoundedRect(ctx, st.batteryX + 5, batteryY + 5, fillWidth, st.batteryHeight - 10, 4); 
+            ctx.fill(); 
+        }
+
         // --- 2. 绘制核心支付信息 ---
         const pi = config.paymentInfo; 
         ctx.fillStyle = config.colors.mainText;
