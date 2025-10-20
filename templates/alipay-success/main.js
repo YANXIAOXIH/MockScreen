@@ -58,6 +58,11 @@ export const template = {
         reward2: 'templates/alipay-success/icons/reward-2.png',
         reward3: 'templates/alipay-success/icons/reward-3.png',
         reward4: 'templates/alipay-success/icons/reward-4.png',
+        reward5: 'templates/alipay-success/icons/reward-5.png',
+        reward6: 'templates/alipay-success/icons/reward-6.png',
+        reward7: 'templates/alipay-success/icons/reward-7.png',
+        reward8: 'templates/alipay-success/icons/reward-8.png',
+        reward9: 'templates/alipay-success/icons/reward-9.png',
         currency: 'templates/alipay-success/icons/currency.png',
     },
 
@@ -83,8 +88,8 @@ export const template = {
 
         // --- 核心支付信息 ---
         paymentInfo: { 
-            amountY: 501,      // 金额数字文本的基线 Y 坐标
-            amountFont: 'bold 135px "AlipayNumber"', // 金额数字的字体样式
+            amountY: 505,      // 金额数字文本的基线 Y 坐标
+            amountFont: ' 145px "AlipayNumber"', // 金额数字的字体样式
             currencySize: 90,   // 人民币图标的边长
             currencyGap: 10,    // 人民币图标和金额数字之间的空隙
 
@@ -161,7 +166,6 @@ export const template = {
             <legend>支付有礼</legend>
             <div class="horizontal-controls-container">
                 <div class="checkbox-group">
-                    <!-- 添加 class="reward-checkbox" 和 data-reward-id="reward1" -->
                     <input type="checkbox" class="control reward-checkbox" data-id="reward1Toggle" data-reward-id="reward1" checked><label>支付积分</label>
                 </div>
                 <div class="checkbox-group">
@@ -172,6 +176,21 @@ export const template = {
                 </div>
                 <div class="checkbox-group">
                     <input type="checkbox" class="control reward-checkbox" data-id="reward4Toggle" data-reward-id="reward4" checked><label>里程币</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" class="control reward-checkbox" data-id="reward5Toggle" data-reward-id="reward5"><label>水果店</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" class="control reward-checkbox" data-id="reward6Toggle" data-reward-id="reward6"><label>健康能量</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" class="control reward-checkbox" data-id="reward7Toggle" data-reward-id="reward7"><label>绿色能量+71</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" class="control reward-checkbox" data-id="reward8Toggle" data-reward-id="reward8"><label>支付积分+18</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" class="control reward-checkbox" data-id="reward9Toggle" data-reward-id="reward9"><label>蚂蚁庄园+80</label>
                 </div>
             </div>
         </fieldset>

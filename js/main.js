@@ -161,17 +161,12 @@ downloadBtn.addEventListener('click', () => {
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0'); // 月份是从0开始的(0-11)，所以需要+1
     const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
 
     // 3. 将格式化后的部分拼接成一个完整的文件名字符串
-    //    格式如: alipay-success_2025-10-27_19-30-55.png
-    const fileName = `${templateSelect.value}_${year}-${month}-${day}_${hours}-${minutes}-${seconds}.png`;
+    //    格式如: alipay-success-2025-10-27.png
+    const fileName = `${templateSelect.value}-${year}-${month}-${day}.png`;
 
     // --- 结束新增的日期格式化逻辑 ---
-
-
     const link = document.createElement('a');
     
     // 4. 使用我们新生成的、包含日期的文件名
