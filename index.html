@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MockScreen</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container controls">
+        <h1>参数设置</h1>
+        <div class="input-group">
+            <label for="template-select">选择模板</label>
+            <select id="template-select">
+                <!-- 注意 value 属性需要与 templates 目录下的文件夹名完全一致 -->
+                <option value="alipay-success">支付宝 - 支付成功</option>
+                <option value="alipay-details"selected>支付宝 - 账单详情</option>
+                <option value="wechat-success">微信 - 支付成功</option>
+            </select>
+        </div>
+        <div id="template-controls-container">
+            <p>正在加载模板...</p>
+        </div>
+        <button id="download-btn">下载图片</button>
+    </div>
+
+    <div class="container preview">
+        <h2>效果预览</h2>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

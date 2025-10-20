@@ -1,0 +1,49 @@
+/* CSS样式开始 */
+/* [核心改动] 字体路径已更新，指向顶层的 /fonts/ 目录 */
+@font-face {
+    font-family: 'PingFang';
+    src: url('../fonts/PingFangSC-Regular.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'AlipayNumber';
+    src: url('../fonts/AlipayNumber.ttf') format('truetype');
+}
+
+:root {
+    --theme-color: #007BFF; --bg-color: #f4f6f9; --container-bg: #ffffff;
+    --text-color: #333; --border-color: #dee2e6; --success-color: #28a745;
+}
+body {
+    font-family: 'PingFang', -apple-system, sans-serif;
+    margin: 0; padding: 20px; background-color: var(--bg-color);
+    display: flex; justify-content: center; align-items: flex-start; gap: 30px; flex-wrap: wrap;
+}
+.container { background-color: var(--container-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); }
+.controls { width: 400px; }
+.preview { width: 380px; text-align: center; }
+h1, h2 { text-align: center; color: var(--theme-color); margin-top: 0; font-weight: 600; }
+.input-group { margin-bottom: 18px; }
+.input-group label { display: block; margin-bottom: 6px; color: var(--text-color); font-weight: 500; font-size: 14px; }
+.input-group input[type="text"], .input-group input[type="time"], .input-group select, .input-group textarea {
+    width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; font-size: 16px; font-family: inherit;
+}
+.input-group input[type="range"] { width: 100%; }
+.checkbox-group, .radio-group { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.horizontal-controls-container {
+    display: flex;       /* 开启 Flexbox 布局，使内部元素水平排列 */
+    flex-wrap: wrap;     /* 允许元素在空间不足时换行 */
+    gap: 10px 15px;      /* 设置元素之间的间距 (垂直10px, 水平20px) */
+    padding: 5px 0;      /* 添加一点垂直内边距，让观感更好 */
+    margin-bottom: 18px; /* 保持与下方元素的间距 */
+}
+.horizontal-controls-container .checkbox-group {
+    margin-bottom: 0;
+}
+.quick-buttons { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.quick-buttons button { background-color: #e9ecef; color: #495057; border: 1px solid #ced4da; padding: 5px 10px; font-size: 12px; border-radius: 4px; cursor: pointer; width: auto; margin-top: 0; font-weight: normal; box-shadow: none; }
+.quick-buttons button:hover { background-color: #d6d8db; }
+#download-btn { width: 100%; padding: 12px; background-color: var(--success-color); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: background-color 0.2s; }
+#download-btn:hover { background-color: #218838; }
+#canvas { border: 1px solid var(--border-color); width: 100%; height: auto; border-radius: 8px; }
+fieldset { border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+/* `.template-controls` 相关的样式不再需要，因为我们是动态替换内容 */
