@@ -49,16 +49,16 @@ export function initialize(drawCanvasCallback) {
 // 导出该模板的完整配置对象
 export const template = {
     assets: {
-        bg: 'templates/alipay-success/Icons/background.png',
-        locationIcon: 'templates/alipay-success/Icons/location.png',
-        alarmIcon: 'templates/alipay-success/Icons/alarmIcon.png',
-        userIcon: 'templates/alipay-success/Icons/userIcon.png',
-        sleepIcon: 'templates/alipay-success/Icons/sleepIcon.png',
-        reward1: 'templates/alipay-success/Icons/reward-1.png',
-        reward2: 'templates/alipay-success/Icons/reward-2.png',
-        reward3: 'templates/alipay-success/Icons/reward-3.png',
-        reward4: 'templates/alipay-success/Icons/reward-4.png',
-        currency: 'templates/alipay-success/Icons/currency.png',
+        bg: 'templates/alipay-success/icons/background.png',
+        locationIcon: 'templates/alipay-success/icons/location.png',
+        alarmIcon: 'templates/alipay-success/icons/alarmIcon.png',
+        userIcon: 'templates/alipay-success/icons/userIcon.png',
+        sleepIcon: 'templates/alipay-success/icons/sleepIcon.png',
+        reward1: 'templates/alipay-success/icons/reward-1.png',
+        reward2: 'templates/alipay-success/icons/reward-2.png',
+        reward3: 'templates/alipay-success/icons/reward-3.png',
+        reward4: 'templates/alipay-success/icons/reward-4.png',
+        currency: 'templates/alipay-success/icons/currency.png',
     },
 
     // =================================================================================
@@ -73,9 +73,9 @@ export const template = {
             y: 50,             // 整个状态栏的垂直位置 (Y坐标)
             timeX: 65,         // 左侧时间的水平位置 (X坐标)
             timeFont: 'bold 48px "PingFang"', // 时间的字体样式
-            IconStartX: 205,   // 第一个状态图标的起始X坐标
+            iconstartX: 205,   // 第一个状态图标的起始X坐标
             IconY: 55,         // 所有状态图标的Y坐标
-            IconSize: 40,      // 状态图标的边长 (正方形)
+            iconsize: 40,      // 状态图标的边长 (正方形)
             IconGap: 8,       // 状态图标之间的间
             batteryX: 1040,    // 电池图标的X坐标
             batteryY: 57,      // 电池图标的Y坐标
@@ -194,11 +194,11 @@ export const template = {
         ctx.fillText(controls.time, st.timeX, st.y);
         
         // 依次绘制状态图标，每画一个，下一个的X坐标就向右移动
-        let currentIconX = st.IconStartX;
-        if (controls.locationToggle && assets.locationIcon) { ctx.drawImage(assets.locationIcon, currentIconX, st.IconY, st.IconSize, st.IconSize); currentIconX += st.IconSize + st.IconGap; }
-        if (controls.alarmIconToggle && assets.alarmIcon) { ctx.drawImage(assets.alarmIcon, currentIconX, st.IconY, st.IconSize, st.IconSize); currentIconX += st.IconSize + st.IconGap; }
-        if (controls.userIconToggle && assets.userIcon) { ctx.drawImage(assets.userIcon, currentIconX, st.IconY, st.IconSize, st.IconSize); }
-        if (controls.sleepIconToggle && assets.sleepIcon) { ctx.drawImage(assets.sleepIcon, currentIconX, st.IconY, st.IconSize, st.IconSize); }
+        let currentIconX = st.iconstartX;
+        if (controls.locationToggle && assets.locationIcon) { ctx.drawImage(assets.locationIcon, currentIconX, st.IconY, st.iconsize, st.iconsize); currentIconX += st.iconsize + st.IconGap; }
+        if (controls.alarmIconToggle && assets.alarmIcon) { ctx.drawImage(assets.alarmIcon, currentIconX, st.IconY, st.iconsize, st.iconsize); currentIconX += st.iconsize + st.IconGap; }
+        if (controls.userIconToggle && assets.userIcon) { ctx.drawImage(assets.userIcon, currentIconX, st.IconY, st.iconsize, st.iconsize); }
+        if (controls.sleepIconToggle && assets.sleepIcon) { ctx.drawImage(assets.sleepIcon, currentIconX, st.IconY, st.iconsize, st.iconsize); }
         
         // 绘制电池
         if (controls.battery > 0) { const fillWidth = (st.batteryWidth - 10) * (controls.battery / 100); drawRoundedRect(ctx, st.batteryX + 5, st.batteryY + 5, fillWidth, st.batteryHeight - 10, 4); ctx.fill(); }

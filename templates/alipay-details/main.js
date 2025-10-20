@@ -62,9 +62,9 @@ export const template = {
     assets: {
         bg: 'templates/alipay-details/icons/background.png',
         locationIcon: 'templates/alipay-details/icons/location.png',
-        alarmIcon: 'templates/alipay-details/Icons/alarmIcon.png',
-        userIcon: 'templates/alipay-details/Icons/userIcon.png',
-        sleepIcon: 'templates/alipay-details/Icons/sleepIcon.png',
+        alarmIcon: 'templates/alipay-details/icons/alarmIcon.png',
+        userIcon: 'templates/alipay-details/icons/userIcon.png',
+        sleepIcon: 'templates/alipay-details/icons/sleepIcon.png',
         shopIcon: 'templates/alipay-details/icons/shop-icon.png',
         billManagementStyle1: 'templates/alipay-details/icons/bill-management-1.png',
         billManagementStyle2: 'templates/alipay-details/icons/bill-management-2.png',
@@ -85,9 +85,9 @@ export const template = {
             y: 88,             // 整个状态栏的垂直位置 (Y坐标)
             timeX: 148,         // 左侧时间的水平位置 (X坐标)
             timeFont: 'bold 50px "PingFang"', // 时间的字体样式
-            iconStartX: 300,   // 第一个状态图标的起始X坐标
+            iconstartX: 300,   // 第一个状态图标的起始X坐标
             iconY: 63,         // 所有状态图标的Y坐标
-            iconSize: 48,      // 状态图标的边长 (正方形)
+            iconsize: 48,      // 状态图标的边长 (正方形)
             iconGap: 8,       // 状态图标之间的间
             batteryX: 1086,    // 电池图标的X坐标
             batteryY: 66,      // 电池图标的Y坐标
@@ -98,7 +98,7 @@ export const template = {
         // --- 中间核心信息卡片 ---
         mainCard: { 
             shopIconY: 385, 
-            shopIconSize: 138, 
+            shopiconsize: 138, 
             shopNameY: 595, 
             shopNameFont: '48px "PingFang"', 
             amountY: 725, amountFont: 'bold 110px "AlipayNumber"',
@@ -225,11 +225,11 @@ export const template = {
         ctx.textBaseline = 'middle';
         ctx.fillText(controls.time, st.timeX, st.y);
 
-        let currentIconX = st.iconStartX;
-        if (controls.locationToggle && assets.locationIcon) { ctx.drawImage(assets.locationIcon, currentIconX, st.iconY, st.iconSize, st.iconSize); currentIconX += st.iconSize + st.iconGap; }
-        if (controls.alarmIconToggle && assets.alarmIcon) { ctx.drawImage(assets.alarmIcon, currentIconX, st.iconY, st.iconSize, st.iconSize); currentIconX += st.iconSize + st.iconGap; }
-        if (controls.userIconToggle && assets.userIcon) { ctx.drawImage(assets.userIcon, currentIconX, st.iconY, st.iconSize, st.iconSize); currentIconX += st.iconSize + st.iconGap; }
-        if (controls.sleepIconToggle && assets.sleepIcon) { ctx.drawImage(assets.sleepIcon, currentIconX, st.iconY, st.iconSize, st.iconSize); } // 最后一个图标后面不加gap
+        let currentIconX = st.iconstartX;
+        if (controls.locationToggle && assets.locationIcon) { ctx.drawImage(assets.locationIcon, currentIconX, st.iconY, st.iconsize, st.iconsize); currentIconX += st.iconsize + st.iconGap; }
+        if (controls.alarmIconToggle && assets.alarmIcon) { ctx.drawImage(assets.alarmIcon, currentIconX, st.iconY, st.iconsize, st.iconsize); currentIconX += st.iconsize + st.iconGap; }
+        if (controls.userIconToggle && assets.userIcon) { ctx.drawImage(assets.userIcon, currentIconX, st.iconY, st.iconsize, st.iconsize); currentIconX += st.iconsize + st.iconGap; }
+        if (controls.sleepIconToggle && assets.sleepIcon) { ctx.drawImage(assets.sleepIcon, currentIconX, st.iconY, st.iconsize, st.iconsize); } // 最后一个图标后面不加gap
         
         // 绘制电池
         if (controls.battery > 0) { const fillWidth = (st.batteryWidth - 10) * (controls.battery / 100); drawRoundedRect(ctx, st.batteryX + 5, st.batteryY + 5, fillWidth, st.batteryHeight - 10, 6); ctx.fill(); }
@@ -237,7 +237,7 @@ export const template = {
         // --- 2. 绘制中间核心信息卡片 ---
         const mc = config.mainCard;
         // 绘制商铺图标
-        if (assets.shopIcon) ctx.drawImage(assets.shopIcon, config.canvasWidth / 2 - mc.shopIconSize / 2, mc.shopIconY, mc.shopIconSize, mc.shopIconSize);
+        if (assets.shopIcon) ctx.drawImage(assets.shopIcon, config.canvasWidth / 2 - mc.shopiconsize / 2, mc.shopIconY, mc.shopiconsize, mc.shopiconsize);
         
         // 绘制商户名称和金额
         ctx.font = mc.shopNameFont; ctx.fillStyle = '#333333'; ctx.textAlign = 'center';
