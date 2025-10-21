@@ -22,7 +22,6 @@ export function initialize(drawCanvasCallback) {
                 // 2. 更新可见的分类名称输入框的文本
                 categoryNameInput.value = currentRadio.nextElementSibling.textContent;
 
-                
                 // 3. 在隐藏输入框上触发事件，通知主程序更新画布
                 hiddenChoiceInput.dispatchEvent(new Event('input'));
                 

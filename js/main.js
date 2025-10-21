@@ -53,7 +53,15 @@ function drawCanvas() {
     const controls = {};
     document.querySelectorAll('#template-controls-container .control').forEach(el => {
         const id = el.dataset.id;
-        if (el.type === 'radio') {
+        
+        // [修改] 核心改动在这里
+        if (el.type === 'file') {
+            // 如果是文件类型，我们不关心它的 .value
+            // 而是检查 currentLoadedAssets 中是否有已加载的图片对象
+            if (currentLoadedAssets[id]) {
+                controls[id] = currentLoadedAssets[id];
+            }
+        } else if (el.type === 'radio') {
             if (el.checked) controls[id] = el.value;
         } else {
             controls[id] = el.type === 'checkbox' ? el.checked : el.value;
@@ -67,12 +75,55 @@ function drawCanvas() {
  * 为动态加载的控件绑定事件监听器。
  */
 function bindControlListeners() {
-    // 实时更新
+    // 实时更新 (文本、复选框等)
     document.querySelectorAll('#template-controls-container .control').forEach(element => {
-        element.addEventListener('input', drawCanvas);
+        // [修改] 对文件输入框使用 'change' 事件，其他用 'input'
+        const eventType = element.type === 'file' ? 'change' : 'input';
+        element.addEventListener(eventType, drawCanvas);
     });
 
-    // 快捷按钮
+    // --- [新增] 处理文件上传的核心逻辑 ---
+    document.querySelectorAll('input[type="file"].control').forEach(element => {
+        element.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            const id = element.dataset.id;
+
+            if (!file) {
+                // 如果用户取消了选择，清除已上传的图片并重绘
+                delete currentLoadedAssets[id];
+                drawCanvas();
+                return;
+            }
+
+            if (!file.type.startsWith('image/')) {
+                alert('请选择一个图片文件！');
+                return;
+            }
+
+            // 使用 FileReader API 来读取文件
+            const reader = new FileReader();
+
+            // 当文件读取完成后
+            reader.onload = (e) => {
+                const img = new Image();
+                // 当图片对象加载完数据后
+                img.onload = () => {
+                    // 将加载好的图片对象存储在 currentLoadedAssets 中
+                    // key 就是控件的 data-id (例如 "merchantIcon")
+                    currentLoadedAssets[id] = img;
+                    // 立即重绘 canvas 以显示新上传的图片
+                    drawCanvas();
+                };
+                // 设置图片对象的源为读取到的文件数据 (Base64 URL)
+                img.src = e.target.result;
+            };
+
+            // 开始读取文件
+            reader.readAsDataURL(file);
+        });
+    });
+
+    // 快捷按钮 (无需修改)
     document.querySelectorAll('#template-controls-container .quick-buttons button').forEach(button => {
         button.addEventListener('click', () => {
             const targetInput = document.querySelector(`.control[data-id="${button.dataset.target}"]`);

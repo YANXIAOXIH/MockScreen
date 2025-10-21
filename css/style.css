@@ -47,3 +47,49 @@ h1, h2 { text-align: center; color: var(--theme-color); margin-top: 0; font-weig
 #canvas { border: 1px solid var(--border-color); width: 100%; height: auto; border-radius: 8px; }
 fieldset { border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 20px; }
 /* `.template-controls` 相关的样式不再需要，因为我们是动态替换内容 */
+/* =============================================== */
+/*  [新增] 统一输入框样式
+/* =============================================== */
+
+/* 针对所有文本类输入框和文本域的基础样式 */
+.control[type="text"],
+.control[type="time"],
+.control[type="datetime-local"],
+textarea.control {
+    /* 盒模型与尺寸 */
+    box-sizing: border-box; /* 确保 padding 不会撑大宽度 */
+    width: 100%;
+    padding: 10px 12px;
+    
+    /* 字体与颜色 */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 1rem;
+    color: #333;
+    background-color: #fff;
+
+    /* 边框与圆角 */
+    border: 1px solid #ccc;
+    border-radius: 6px; /* 圆角大小 */
+
+    /* 其他 */
+    -webkit-appearance: none; /* 移除 iOS 上的默认样式 */
+    -moz-appearance: none;
+    appearance: none;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+/* 当用户点击输入框时，显示一个蓝色的外发光效果，提升体验 */
+.control[type="text"]:focus,
+.control[type="time"]:focus,
+.control[type="datetime-local"]:focus,
+textarea.control:focus {
+    outline: none; /* 移除默认的蓝色轮廓 */
+    border-color: #007bff; /* 将边框变为蓝色 */
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25); /* 添加一个柔和的蓝色阴影 */
+}
+
+/* 单独微调文件上传按钮，让它不那么宽 */
+.control[type="file"] {
+    width: auto;
+    margin-top: 5px;
+}
