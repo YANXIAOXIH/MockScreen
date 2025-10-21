@@ -60,11 +60,16 @@ export function initialize(drawCanvasCallback) {
 
 export const template = {
     assets: {
+        // 状态栏图标
+        locationIcon: 'icons/IoslocatIcon.png',
+        alarmIcon: 'icons/IosalarmIcon.png',
+        bellIcon: 'icons/IosBellIcon.png',
+        userIcon: 'icons/IosuserIcon.png',
+        sleepIcon: 'icons/IossleepIcon.png',
+        wifiIcon: 'icons/IosWifiIcon.png',
+        lteIcon: 'icons/Ios5GIcon.png',
+        // 背景
         bg: 'templates/alipay-details/icons/background.png',
-        locationIcon: 'templates/alipay-details/icons/location.png',
-        alarmIcon: 'templates/alipay-details/icons/alarmIcon.png',
-        userIcon: 'templates/alipay-details/icons/userIcon.png',
-        sleepIcon: 'templates/alipay-details/icons/sleepIcon.png',
         shopIcon: 'templates/alipay-details/icons/shop-icon.png',
         billManagementStyle1: 'templates/alipay-details/icons/bill-management-1.png',
         billManagementStyle2: 'templates/alipay-details/icons/bill-management-2.png',
@@ -82,7 +87,7 @@ export const template = {
         
         // --- 顶部状态栏 ---
         statusBar: { 
-            y: 88,             // 整个状态栏的垂直位置 (Y坐标)
+            baseY: 88,             // 整个状态栏的垂直位置 (Y坐标)
             timeX: 148,         // 左侧时间的水平位置 (X坐标)
             timeFont: 'bold 50px "PingFang"', // 时间的字体样式
             iconstartX: 300,   // 第一个状态图标的起始X坐标
@@ -148,10 +153,13 @@ export const template = {
             <legend>顶部状态栏</legend>
             <div class="input-group"><label>时间</label><input type="time" class="control" data-id="time" value="21:10"></div>
             <div class="horizontal-controls-container">
-                <div class="checkbox-group"><input type="checkbox" class="control" data-id="locationToggle" checked><label>定位</label></div>
-                <div class="checkbox-group"><input type="checkbox" class="control" data-id="alarmIconToggle"><label>声音</label></div>
+                <div class="checkbox-group"><input type="checkbox" class="control" data-id="locationToggle"><label>定位</label></div>
+                <div class="checkbox-group"><input type="checkbox" class="control" data-id="alarmIconToggle"><label>闹钟</label></div>
+                <div class="checkbox-group"><input type="checkbox" class="control" data-id="bellIconToggle"><label>铃声</label></div>
                 <div class="checkbox-group"><input type="checkbox" class="control" data-id="userIconToggle"><label>个人</label></div>
                 <div class="checkbox-group"><input type="checkbox" class="control" data-id="sleepIconToggle"><label>睡眠</label></div>
+                <div class="checkbox-group"><input type="checkbox" class="control" data-id="wifiIconToggle"><label>wifi</label></div>
+                <div class="checkbox-group"><input type="checkbox" class="control" data-id="lteIconToggle"checked><label>信号</label></div>
             </div>
 
             <div class="input-group"><label>电池电量: <span class="control-value" data-id="batteryValue">36</span>%</label><input type="range" class="control" data-id="battery" min="0" max="100" value="56"></div>
@@ -218,22 +226,84 @@ export const template = {
         if (!assets.bg) return;
         ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
         ctx.drawImage(assets.bg, 0, 0);
-        const st = config.statusBar;
-        ctx.fillStyle = config.colors.statusBar;
-        ctx.font = st.timeFont;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(controls.time, st.timeX, st.y);
 
+        // 定义一个辅助函数来绘制并更新X坐标
+        function drawAndAdvanceIcon(controlKey, asset, height, gap) {
+            if (controls[controlKey] && asset) {
+                const calculatedWidth = height * (asset.width / asset.height);
+                ctx.drawImage(asset, currentIconX, iconY, calculatedWidth, height);
+                currentIconX += calculatedWidth + gap;
+                return true; // 表示成功绘制
+            }
+            return false; // 表示未绘制
+        }
+
+        // 绘制顶部状态栏
+        const st = config.statusBar; 
+        ctx.fillStyle = config.colors.statusBar; 
+        ctx.font = st.timeFont;
+        ctx.textAlign = 'left'; 
+        ctx.textBaseline = 'middle';
+        ctx.fillText(controls.time, st.timeX, st.baseY);
+        
+        // --- 绘制左侧图标 ---
         let currentIconX = st.iconstartX;
-        if (controls.locationToggle && assets.locationIcon) { ctx.drawImage(assets.locationIcon, currentIconX, st.iconY, st.iconsize, st.iconsize); currentIconX += st.iconsize + st.iconGap; }
-        if (controls.alarmIconToggle && assets.alarmIcon) { ctx.drawImage(assets.alarmIcon, currentIconX, st.iconY, st.iconsize, st.iconsize); currentIconX += st.iconsize + st.iconGap; }
-        if (controls.userIconToggle && assets.userIcon) { ctx.drawImage(assets.userIcon, currentIconX, st.iconY, st.iconsize, st.iconsize); currentIconX += st.iconsize + st.iconGap; }
-        if (controls.sleepIconToggle && assets.sleepIcon) { ctx.drawImage(assets.sleepIcon, currentIconX, st.iconY, st.iconsize, st.iconsize); } // 最后一个图标后面不加gap
-        
-        // 绘制电池
-        if (controls.battery > 0) { const fillWidth = (st.batteryWidth - 10) * (controls.battery / 100); drawRoundedRect(ctx, st.batteryX + 5, st.batteryY + 5, fillWidth, st.batteryHeight - 10, 6); ctx.fill(); }
-        
+
+        // 定义一个辅助函数来绘制并更新X坐标
+        // (这个辅助函数本身没问题，问题出在调用它时传入的参数)
+        function drawAndAdvanceIcon(controlKey, asset, size, gap) {
+            if (controls[controlKey] && asset) {
+                const calculatedWidth = size * (asset.width / asset.height);
+                // [修正] 直接使用配置中的 st.iconY，不再动态计算
+                ctx.drawImage(asset, currentIconX, st.iconY, calculatedWidth, size);
+                currentIconX += calculatedWidth + gap;
+            }
+        }
+
+        // [修正] 调用辅助函数时，传入正确的属性：st.iconsize 和 st.iconGap
+        drawAndAdvanceIcon('locationToggle', assets.locationIcon, st.iconsize, st.iconGap);
+        drawAndAdvanceIcon('alarmIconToggle', assets.alarmIcon, st.iconsize, st.iconGap);
+        drawAndAdvanceIcon('bellIconToggle', assets.bellIcon, st.iconsize, st.iconGap);
+        drawAndAdvanceIcon('userIconToggle', assets.userIcon, st.iconsize, st.iconGap);
+
+        // 最后一个图标后面不需要间隙，可以单独处理或修改辅助函数
+        if (controls.sleepIconToggle && assets.sleepIcon) {
+            const asset = assets.sleepIcon;
+            const calculatedWidth = st.iconsize * (asset.width / asset.height);
+            ctx.drawImage(asset, currentIconX, st.iconY, calculatedWidth, st.iconsize);
+        }
+
+        //  WiFi 或 5G 图标
+        let currentSignalX = st.batteryX;
+
+        //  WiFi 图标
+        if (controls.wifiIconToggle && assets.wifiIcon) {
+            const asset = assets.wifiIcon;
+            // [修正] 统一使用 st.iconsize
+            const calculatedWidth = st.iconsize * (asset.width / asset.height);
+            // [修正] X坐标计算需要考虑图标间距
+            const iconX = currentSignalX - st.iconGap - calculatedWidth;
+            ctx.drawImage(asset, iconX, st.iconY, calculatedWidth, st.iconsize);
+            currentSignalX = iconX; // 更新边界
+        }
+
+        // 3. 绘制 LTE(信号) 图标
+        if (controls.lteIconToggle && assets.lteIcon) {
+            const asset = assets.lteIcon;
+            // [修正] 统一使用 st.iconsize
+            const calculatedWidth = st.iconsize * (asset.width / asset.height);
+            const iconX = currentSignalX - st.iconGap - calculatedWidth;
+            ctx.drawImage(asset, iconX, st.iconY, calculatedWidth, st.iconsize);
+        }
+
+        // --- 绘制电池 ---
+        // [修正] 直接使用 st.batteryY，不再用 st.baseY 计算
+        if (controls.battery > 0) {
+            const fillWidth = (st.batteryWidth - 8) * (controls.battery / 100);
+            drawRoundedRect(ctx, st.batteryX + 4, st.batteryY + 2, fillWidth, st.batteryHeight - 8, 7);
+            ctx.fill();
+        }
+
         // --- 2. 绘制中间核心信息卡片 ---
         const mc = config.mainCard;
         // 绘制商铺图标

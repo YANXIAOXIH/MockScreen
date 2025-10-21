@@ -11,13 +11,17 @@ export const template = {
     // 资源文件路径
     // =================================================================================
     assets: {
-        bg: 'templates/wechat-success/icons/background.png',
         // 状态栏图标
-        locationIcon: 'templates/wechat-success/icons/location.png',
-        alarmIcon: 'templates/wechat-success/icons/alarmIcon.png',
-        userIcon: 'templates/wechat-success/icons/userIcon.png',
-        sleepIcon: 'templates/wechat-success/icons/sleepIcon.png',
-        // [关键修改] 将之前的支付通知图标，改名为支付通知横幅图片
+        locationIcon: 'icons/IoslocatnighiIcon.png',
+        alarmIcon: 'icons/IosalarmnighiIcon.png',
+        bellIcon: 'icons/IosBellnighiIcon.png',
+        userIcon: 'icons/IosusernighiIcon.png',
+        sleepIcon: 'icons/IossleepnighiIcon.png',
+        wifiIcon: 'icons/IosWifinighiIcon.png',
+        lteIcon: 'icons/Ios5GnighiIcon.png',
+        // 背景
+        bg: 'templates/wechat-success/icons/background.png',
+        // 支付通知横幅图片
         notificationBanner: 'templates/wechat-success/icons/payicon.png',
         // 底部助力图标
         helpIcon: 'templates/wechat-success/icons/help-flower.png',
@@ -33,17 +37,19 @@ export const template = {
         canvasWidth: 1290, // 画布的总宽度
         canvasHeight: 2796, // 画布的总高度
         
-        // --- [修改] 顶部状态栏 (恢复为支付宝模板的配置) ---
+        // --- [修改] 顶部状态栏 ---
         statusBar: { 
             baseY: 88,
             timeX: 140,
-            timeFont: '50px "PingFang"',
+            timeFont: 'bold 50px "PingFang"',
             iconstartX: 290,   // 第一个状态图标的起始X坐标
-            iconsize: 48,      // 状态图标的边长
-            IconGap: 8,       // 状态图标之间的间隙
-            batteryX: 1089,    // 电池图标的X坐标
-            batteryWidth: 75,  // 电池图标主体的宽度
-            batteryHeight: 35  // 电池图标主体的高度
+            iconHeight: 35,      // 状态图标的高
+            IconGap: 20,       // 状态图标之间的间隙
+            signalIconHeight: 42,         // 信号图标的高度
+            signalIconGapToBattery: 25,   // 信号图标与电池之间的间距
+            batteryX: 1087,    // 电池图标的X坐标
+            batteryWidth: 80,  // 电池图标主体的宽度
+            batteryHeight: 38  // 电池图标主体的高度
         },
         
         // --- 顶部微信支付通知 ---
@@ -52,16 +58,16 @@ export const template = {
             amountX: 390,                 // 动态金额文字的X坐标
             amountY: 305,                 // 动态金额文字的Y坐标
             amountFont: '40px "PingFang"', // 动态金额文字的字体
-            amountColor: '#9e9e9e'         // 动态金额文字的颜色
+            amountColor: '#1a1a1a'         // 动态金额文字的颜色
         },
 
         // --- 核心支付信息 ---
         mainContent: {
             merchantY: 600,
-            merchantFont: '55px "PingFang"', // 也可以适当调整字体大小
-            amountY: 705,
+            merchantFont: '55px "AlipayNumber"',
+            amountY: 700,
             amountFont: 'bold 140px "AlipayNumber"',
-            currencyFont: '100px "AlipayNumber"',
+            currencyFont: 'bold 101px "AlipayNumber"',
             currencyGap: 5
         },
         
@@ -76,26 +82,29 @@ export const template = {
             iconSize: 45,
             iconTextGap: 25,
             font: '40px "PingFang"',
-            text: '助力乡村儿童营养改善 >'
         },
-        
+
         colors: { 
-            statusBar: '#FFFFFF',
-            mainText: '#FFFFFF',
-            subText: '#9E9E9E'
+            statusBar: '#000000',
+            mainText: '#1a1a1a',      // 用于商家名称等普通主要文本
+            amountColor: '#1a1a1a',   //金额
+            subText: '#808080'
         }
     },
     
-    // 返回该模板控制选项的HTML字符串
+    // 模板控制选项的HTML字符串
     getControlsHTML: () => `
         <fieldset>
             <legend>顶部状态栏</legend>
             <div class="input-group"><label>时间</label><input type="time" class="control" data-id="time" value="18:45"></div>
             <div class="horizontal-controls-container">
-                <div class="checkbox-group"><input type="checkbox" class="control" data-id="locationToggle" checked><label>定位</label></div>
-                <div class="checkbox-group"><input type="checkbox" class="control" data-id="alarmIconToggle"><label>声音</label></div>
+                <div class="checkbox-group"><input type="checkbox" class="control" data-id="locationToggle"><label>定位</label></div>
+                <div class="checkbox-group"><input type="checkbox" class="control" data-id="alarmIconToggle"><label>闹钟</label></div>
+                <div class="checkbox-group"><input type="checkbox" class="control" data-id="bellIconToggle"><label>铃声</label></div>
                 <div class="checkbox-group"><input type="checkbox" class="control" data-id="userIconToggle"><label>个人</label></div>
                 <div class="checkbox-group"><input type="checkbox" class="control" data-id="sleepIconToggle"><label>睡眠</label></div>
+                <div class="checkbox-group"><input type="checkbox" class="control" data-id="wifiIconToggle"><label>wifi</label></div>
+                <div class="checkbox-group"><input type="checkbox" class="control" data-id="lteIconToggle"checked><label>信号</label></div>
             </div>
             <div class="input-group">
                 <label>电池电量: <span class="control-value" data-id="batteryValue">80</span>%</label>
@@ -108,7 +117,7 @@ export const template = {
             <div class="input-group"><label>商家名称</label><input type="text" class="control" data-id="merchantName" value="简知"></div>
             <div class="input-group"><label>支付金额</label><input type="text" class="control" data-id="amount" value="4680"></div>
             <div class="input-group checkbox-group">
-                <input type="checkbox" class="control" data-id="notificationToggle" checked><label>显示顶部支付通知</label>
+                <input type="checkbox" class="control" data-id="notificationToggle"><label>显示顶部支付通知</label>
             </div>
             <div class="input-group">
                 <label>摇一摇优惠</label>
@@ -116,6 +125,15 @@ export const template = {
                     <input type="radio" name="shake-banner" class="control" data-id="shakeBannerSelection" value="shakeBanner1" checked> <label>样式一</label>
                     <input type="radio" name="shake-banner" class="control" data-id="shakeBannerSelection" value="shakeBanner2"> <label>样式二</label>
                     <input type="radio" name="shake-banner" class="control" data-id="shakeBannerSelection" value="none"> <label>不显示</label>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>爱心助力</label>
+                <input type="text" class="control" data-id="helpLinkText" value="助力乡村儿童营养改善">
+                <div class="quick-buttons">
+                    <button data-target="helpLinkText" data-value="助力乡村儿童营养改善">乡村儿童</button>
+                    <button data-target="helpLinkText" data-value="关爱亚洲黑熊">亚洲黑熊</button>
+                    <button data-target="helpLinkText" data-value="为环卫工人送爱心餐">环卫工人</button>
                 </div>
             </div>
         </fieldset>
@@ -126,8 +144,19 @@ export const template = {
         if (!assets.bg) return;
         ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
         ctx.drawImage(assets.bg, 0, 0);
-        
-        // 1. 绘制状态栏
+
+        // 定义一个辅助函数来绘制并更新X坐标
+        function drawAndAdvanceIcon(controlKey, asset, height, gap) {
+            if (controls[controlKey] && asset) {
+                const calculatedWidth = height * (asset.width / asset.height);
+                ctx.drawImage(asset, currentIconX, iconY, calculatedWidth, height);
+                currentIconX += calculatedWidth + gap;
+                return true; // 表示成功绘制
+            }
+            return false; // 表示未绘制
+        }
+
+        // 绘制顶部状态栏
         const st = config.statusBar; 
         ctx.fillStyle = config.colors.statusBar; 
         ctx.font = st.timeFont;
@@ -135,42 +164,73 @@ export const template = {
         ctx.textBaseline = 'middle';
         ctx.fillText(controls.time, st.timeX, st.baseY);
         
-        const iconY = st.baseY - (st.iconsize / 2);
         let currentIconX = st.iconstartX;
-        if (controls.locationToggle && assets.locationIcon) { 
-            ctx.drawImage(assets.locationIcon, currentIconX, iconY, st.iconsize, st.iconsize); 
-            currentIconX += st.iconsize + st.IconGap; 
+        const iconY = st.baseY - (st.iconHeight / 2);
+
+        // 使用函数简化绘制逻辑
+        drawAndAdvanceIcon('locationToggle', assets.locationIcon, st.iconHeight, st.IconGap);
+        drawAndAdvanceIcon('alarmIconToggle', assets.alarmIcon, st.iconHeight, st.IconGap);
+        drawAndAdvanceIcon('bellIconToggle', assets.bellIcon, st.iconHeight, st.IconGap);
+        drawAndAdvanceIcon('userIconToggle', assets.userIcon, st.iconHeight, st.IconGap);
+
+        // 最后一个图标后面不需要间隙，可以单独处理或修改辅助函数
+        if (controls.sleepIconToggle && assets.sleepIcon) {
+            const asset = assets.sleepIcon;
+            const calculatedWidth = st.iconHeight * (asset.width / asset.height);
+            ctx.drawImage(asset, currentIconX, iconY, calculatedWidth, st.iconHeight);
         }
-        if (controls.alarmIconToggle && assets.alarmIcon) { 
-            ctx.drawImage(assets.alarmIcon, currentIconX, iconY, st.iconsize, st.iconsize); 
-            currentIconX += st.iconsize + st.IconGap; 
+
+        //  WiFi 或 5G 图标
+        let currentSignalX = st.batteryX;
+
+        //  WiFi 图标
+        if (controls.wifiIconToggle && assets.wifiIcon) {
+            const asset = assets.wifiIcon;
+            const iconHeight = st.signalIconHeight;
+            const calculatedWidth = iconHeight * (asset.width / asset.height);
+            
+            // 计算图标的X坐标：当前右边界 - 间隙 - 图标自身宽度
+            const iconX = currentSignalX - st.signalIconGapToBattery - calculatedWidth;
+            const iconY = st.baseY - (iconHeight / 2); // 垂直居中
+            
+            ctx.drawImage(asset, iconX, iconY, calculatedWidth, iconHeight);
+            
+            // 更新右边界，作为下一个图标的绘制基准
+            currentSignalX = iconX;
         }
-        if (controls.userIconToggle && assets.userIcon) { 
-            ctx.drawImage(assets.userIcon, currentIconX, iconY, st.iconsize, st.iconsize); 
-            currentIconX += st.iconsize + st.IconGap;
-        }
-        if (controls.sleepIconToggle && assets.sleepIcon) { 
-            ctx.drawImage(assets.sleepIcon, currentIconX, iconY, st.iconsize, st.iconsize); 
+
+        // 3. 绘制 LTE(信号) 图标
+        if (controls.lteIconToggle && assets.lteIcon) {
+            const asset = assets.lteIcon;
+            const iconHeight = st.signalIconHeight;
+            const calculatedWidth = iconHeight * (asset.width / asset.height);
+
+            // 计算图标的X坐标：新的右边界 - 两个图标间的标准间隙 - 图标自身宽度
+            const iconX = currentSignalX - st.IconGap - calculatedWidth;
+            const iconY = st.baseY - (iconHeight / 2);
+
+            ctx.drawImage(asset, iconX, iconY, calculatedWidth, iconHeight);
+
+            // 再次更新右边界 (这是一个好习惯，方便未来继续添加图标)
+            currentSignalX = iconX;
         }
 
         // 绘制电池
         const batteryY = st.baseY - st.batteryHeight / 2; 
         if (controls.battery > 0) { 
             const fillWidth = (st.batteryWidth - 8) * (controls.battery / 100);
-            drawRoundedRect(ctx, st.batteryX + 4, batteryY + 2, fillWidth, st.batteryHeight - 8, 7); 
+            drawRoundedRect(ctx, st.batteryX + 4, batteryY + 2, fillWidth, st.batteryHeight - 8, 8); 
             ctx.fill(); 
         }
 
-        // --- 2. [关键修改] 绘制顶部微信支付通知 (新逻辑) ---
+        // --- 2. 绘制顶部微信支付通知 ---
         if (controls.notificationToggle && assets.notificationBanner) {
             const nf = config.notification;
             const banner = assets.notificationBanner;
 
-            // 首先，将整个通知栏图片居中绘制
             const bannerX = (config.canvasWidth - banner.width) / 2;
             ctx.drawImage(banner, bannerX, nf.y);
             
-            // 然后，在图片上叠加绘制动态金额文字
             ctx.fillStyle = nf.amountColor;
             ctx.font = nf.amountFont;
             ctx.textAlign = 'left';
@@ -179,17 +239,17 @@ export const template = {
             ctx.fillText(`${amountValue}`, nf.amountX, nf.amountY);
         }
 
-        // --- 3. 绘制核心支付信息 ---
+        // 绘制核心支付信息
         const mc = config.mainContent;
-        ctx.fillStyle = config.colors.mainText;
-        
         // 绘制商家名称
+        ctx.fillStyle = config.colors.mainText;
         ctx.font = mc.merchantFont;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(controls.merchantName, config.canvasWidth / 2, mc.merchantY);
 
         // 绘制金额
+        ctx.fillStyle = config.colors.amountColor; 
         const amountText = (parseFloat(controls.amount) || 0).toFixed(2);
         const currencySymbol = '¥ ';
 
@@ -199,23 +259,23 @@ export const template = {
         ctx.font = mc.amountFont;
         const amountWidth = ctx.measureText(amountText).width;
         
-        // 步骤2: 计算“符号 + 间隙 + 数字”的总宽度
+        // ... 测量宽度 ...
         const totalWidth = currencyWidth + mc.currencyGap + amountWidth;
-        
-        // 步骤3: 计算出能让这个整体居中的起始X坐标
-        const startX = (config.canvasWidth - totalWidth) / 2;
+        const centerX = config.canvasWidth / 2;
+        const startX = centerX - totalWidth / 2; // 和你的计算结果一样
 
-        // 步骤4: 依次绘制符号和数字
-        ctx.textAlign = 'left'; // 因为我们手动计算了起点，所以这里必须是 left
-        ctx.textBaseline = 'top'; // 使用同一基线对齐
+        // 同样可以这样计算，逻辑上可能更直观
+        const amountCenterY = mc.amountY; // 假设 amountY 是垂直中心
+        ctx.textAlign = 'left'; 
+        ctx.textBaseline = 'top'; //
 
         // 绘制人民币符号
         ctx.font = mc.currencyFont;
-        ctx.fillText(currencySymbol, startX, mc.amountY);
-        
+        ctx.fillText(currencySymbol, startX, amountCenterY);
+
         // 绘制金额数字
         ctx.font = mc.amountFont;
-        ctx.fillText(amountText, startX + currencyWidth + mc.currencyGap, mc.amountY);
+        ctx.fillText(amountText, startX + currencyWidth + mc.currencyGap, amountCenterY);
 
 
         // --- 4. 绘制可选的优惠券 (逻辑不变) ---
@@ -228,19 +288,31 @@ export const template = {
             }
         }
 
-        // --- 5. 绘制底部助力链接 (逻辑不变) ---
-        const hl = config.helpLink;
-        ctx.font = hl.font;
-        const helpTextWidth = ctx.measureText(hl.text).width;
-        const helpTotalWidth = hl.iconSize + hl.iconTextGap + helpTextWidth;
-        const helpStartX = (config.canvasWidth - helpTotalWidth) / 2;
-        if (assets.helpIcon) {
-            ctx.drawImage(assets.helpIcon, helpStartX, hl.y - hl.iconSize/2, hl.iconSize, hl.iconSize);
-        }
-        ctx.fillStyle = config.colors.subText;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(hl.text, helpStartX + hl.iconSize + hl.iconTextGap, hl.y);
+        if (controls.helpLinkText && controls.helpLinkText.trim() !== '') {
+            
+            const hl = config.helpLink;
+            ctx.font = hl.font;
+            
+            // 1. 从控件获取修剪掉空格后的动态文本，并统一加上 ">" 符号
+            const dynamicText = controls.helpLinkText.trim() + ' >';
 
+            // 2. 使用这个动态文本来测量宽度
+            const helpTextWidth = ctx.measureText(dynamicText).width;
+            
+            // 3. 计算总宽度以实现居中
+            const helpTotalWidth = hl.iconSize + hl.iconTextGap + helpTextWidth;
+            const helpStartX = (config.canvasWidth - helpTotalWidth) / 2;
+
+            // 4. 绘制图标
+            if (assets.helpIcon) {
+                ctx.drawImage(assets.helpIcon, helpStartX, hl.y - hl.iconSize/2, hl.iconSize, hl.iconSize);
+            }
+
+            // 5. 绘制文本
+            ctx.fillStyle = config.colors.subText;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(dynamicText, helpStartX + hl.iconSize + hl.iconTextGap, hl.y);
+        }
     }
 };
