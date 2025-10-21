@@ -61,13 +61,13 @@ export function initialize(drawCanvasCallback) {
 export const template = {
     assets: {
         // 状态栏图标
-        locationIcon: 'icons/IoslocatIcon.png',
-        alarmIcon: 'icons/IosalarmIcon.png',
-        bellIcon: 'icons/IosBellIcon.png',
-        userIcon: 'icons/IosuserIcon.png',
-        sleepIcon: 'icons/IossleepIcon.png',
-        wifiIcon: 'icons/IosWifiIcon.png',
-        lteIcon: 'icons/Ios5GIcon.png',
+        locationIcon: 'icons/IoslocatnighiIcon.png',
+        alarmIcon: 'icons/IosalarmnighiIcon.png',
+        bellIcon: 'icons/IosBellnighiIcon.png',
+        userIcon: 'icons/IosusernighiIcon.png',
+        sleepIcon: 'icons/IossleepnighiIcon.png',
+        wifiIcon: 'icons/IosWifinighiIcon.png',
+        lteIcon: 'icons/Ios5GnighiIcon.png',
         // 背景
         bg: 'templates/alipay-details/icons/background.png',
         shopIcon: 'templates/alipay-details/icons/shop-icon.png',
@@ -86,18 +86,18 @@ export const template = {
         canvasHeight: 2796, // 画布的总高度
         
         // --- 顶部状态栏 ---
-        statusBar: { 
+        statusBar: {
             baseY: 88,             // 整个状态栏的垂直位置 (Y坐标)
             timeX: 148,         // 左侧时间的水平位置 (X坐标)
             timeFont: 'bold 50px "PingFang"', // 时间的字体样式
-            iconstartX: 300,   // 第一个状态图标的起始X坐标
-            iconY: 63,         // 所有状态图标的Y坐标
-            iconsize: 48,      // 状态图标的边长 (正方形)
-            iconGap: 8,       // 状态图标之间的间
-            batteryX: 1086,    // 电池图标的X坐标
-            batteryY: 66,      // 电池图标的Y坐标
-            batteryWidth: 81,  // 电池图标主体的宽度
-            batteryHeight: 40  // 电池图标主体的高度
+            iconstartX: 290,   // 第一个状态图标的起始X坐标
+            iconHeight: 35,      // 状态图标的高
+            IconGap: 20,       // 状态图标之间的间隙
+            signalIconHeight: 42,         // 信号图标的高度
+            signalIconGapToBattery: 25,   // 信号图标与电池之间的间距
+            batteryX: 1087,    // 电池图标的X坐标
+            batteryWidth: 80,  // 电池图标主体的宽度
+            batteryHeight: 37  // 电池图标主体的高度
         },
         
         // --- 中间核心信息卡片 ---
@@ -239,68 +239,71 @@ export const template = {
         }
 
         // 绘制顶部状态栏
-        const st = config.statusBar; 
-        ctx.fillStyle = config.colors.statusBar; 
+        const st = config.statusBar;
+        ctx.fillStyle = config.colors.statusBar;
         ctx.font = st.timeFont;
-        ctx.textAlign = 'left'; 
+        ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
         ctx.fillText(controls.time, st.timeX, st.baseY);
-        
+
         // --- 绘制左侧图标 ---
         let currentIconX = st.iconstartX;
+        // [修正] 动态计算图标的垂直中心位置
+        const iconY = st.baseY - (st.iconHeight / 2);
 
-        // 定义一个辅助函数来绘制并更新X坐标
-        // (这个辅助函数本身没问题，问题出在调用它时传入的参数)
-        function drawAndAdvanceIcon(controlKey, asset, size, gap) {
+
+        function drawAndAdvanceIcon(controlKey, asset, height, gap) {
             if (controls[controlKey] && asset) {
-                const calculatedWidth = size * (asset.width / asset.height);
-                // [修正] 直接使用配置中的 st.iconY，不再动态计算
-                ctx.drawImage(asset, currentIconX, st.iconY, calculatedWidth, size);
+                const calculatedWidth = height * (asset.width / asset.height);
+                ctx.drawImage(asset, currentIconX, iconY, calculatedWidth, height);
                 currentIconX += calculatedWidth + gap;
             }
         }
-
-        // [修正] 调用辅助函数时，传入正确的属性：st.iconsize 和 st.iconGap
-        drawAndAdvanceIcon('locationToggle', assets.locationIcon, st.iconsize, st.iconGap);
-        drawAndAdvanceIcon('alarmIconToggle', assets.alarmIcon, st.iconsize, st.iconGap);
-        drawAndAdvanceIcon('bellIconToggle', assets.bellIcon, st.iconsize, st.iconGap);
-        drawAndAdvanceIcon('userIconToggle', assets.userIcon, st.iconsize, st.iconGap);
+        
+        // [修正] 传入正确的 config 属性名：st.iconHeight 和 st.IconGap
+        drawAndAdvanceIcon('locationToggle', assets.locationIcon, st.iconHeight, st.IconGap);
+        drawAndAdvanceIcon('alarmIconToggle', assets.alarmIcon, st.iconHeight, st.IconGap);
+        drawAndAdvanceIcon('bellIconToggle', assets.bellIcon, st.iconHeight, st.IconGap);
+        drawAndAdvanceIcon('userIconToggle', assets.userIcon, st.iconHeight, st.IconGap);
 
         // 最后一个图标后面不需要间隙，可以单独处理或修改辅助函数
         if (controls.sleepIconToggle && assets.sleepIcon) {
             const asset = assets.sleepIcon;
-            const calculatedWidth = st.iconsize * (asset.width / asset.height);
-            ctx.drawImage(asset, currentIconX, st.iconY, calculatedWidth, st.iconsize);
+            const calculatedWidth = st.iconHeight * (asset.width / asset.height);
+            ctx.drawImage(asset, currentIconX, iconY, calculatedWidth, st.iconHeight);
         }
 
-        //  WiFi 或 5G 图标
-        let currentSignalX = st.batteryX;
+        // --- 绘制右侧图标 ---
+        let currentSignalX = st.batteryX; // 从电池左侧开始
 
         //  WiFi 图标
         if (controls.wifiIconToggle && assets.wifiIcon) {
             const asset = assets.wifiIcon;
-            // [修正] 统一使用 st.iconsize
-            const calculatedWidth = st.iconsize * (asset.width / asset.height);
-            // [修正] X坐标计算需要考虑图标间距
-            const iconX = currentSignalX - st.iconGap - calculatedWidth;
-            ctx.drawImage(asset, iconX, st.iconY, calculatedWidth, st.iconsize);
-            currentSignalX = iconX; // 更新边界
+            // [修正] 使用 st.signalIconHeight
+            const calculatedWidth = st.signalIconHeight * (asset.width / asset.height);
+            // [修正] 使用 st.signalIconGapToBattery
+            const iconX = currentSignalX - st.signalIconGapToBattery - calculatedWidth;
+            const iconY_signal = st.baseY - (st.signalIconHeight / 2);
+            ctx.drawImage(asset, iconX, iconY_signal, calculatedWidth, st.signalIconHeight);
+            currentSignalX = iconX;
         }
 
-        // 3. 绘制 LTE(信号) 图标
+        // 绘制 LTE(信号) 图标
         if (controls.lteIconToggle && assets.lteIcon) {
             const asset = assets.lteIcon;
-            // [修正] 统一使用 st.iconsize
-            const calculatedWidth = st.iconsize * (asset.width / asset.height);
-            const iconX = currentSignalX - st.iconGap - calculatedWidth;
-            ctx.drawImage(asset, iconX, st.iconY, calculatedWidth, st.iconsize);
+            const calculatedWidth = st.signalIconHeight * (asset.width / asset.height);
+            // [修正] 使用 st.IconGap 作为信号和WiFi之间的间距
+            const iconX = currentSignalX - st.IconGap - calculatedWidth;
+            const iconY_signal = st.baseY - (st.signalIconHeight / 2);
+            ctx.drawImage(asset, iconX, iconY_signal, calculatedWidth, st.signalIconHeight);
         }
 
         // --- 绘制电池 ---
-        // [修正] 直接使用 st.batteryY，不再用 st.baseY 计算
+        // [修正] 根据 st.baseY 和 st.batteryHeight 计算电池的Y坐标
+        const batteryY = st.baseY - st.batteryHeight / 2;
         if (controls.battery > 0) {
             const fillWidth = (st.batteryWidth - 8) * (controls.battery / 100);
-            drawRoundedRect(ctx, st.batteryX + 4, st.batteryY + 2, fillWidth, st.batteryHeight - 8, 7);
+            drawRoundedRect(ctx, st.batteryX + 4, batteryY + 2, fillWidth, st.batteryHeight - 8, 8);
             ctx.fill();
         }
 
