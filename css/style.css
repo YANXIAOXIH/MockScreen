@@ -93,3 +93,20 @@ textarea.control:focus {
     width: auto;
     margin-top: 5px;
 }
+/* 页面全局页脚样式 */
+.page-footer {
+    width: 100%; /* 宽度撑满 */
+    text-align: center; /* 文字居中 */
+    padding: 20px 0; /* 上下留出一些间距 */
+    color: #999; /* 文字颜色为灰色 */
+    font-size: 14px; /* 字体稍小一些 */
+}
+
+.page-footer a {
+    color: #007BFF; /* 链接颜色使用主题色 */
+    text-decoration: none; /* 去掉下划线 */
+}
+
+.page-footer a:hover {
+    text-decoration: underline; /* 鼠标悬停时显示下划线 */
+}
