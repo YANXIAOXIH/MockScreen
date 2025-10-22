@@ -111,35 +111,83 @@ textarea.control:focus {
     text-decoration: underline; /* 鼠标悬停时显示下划线 */
 }
 
-
 /* =============================================== */
-/*  [新增] 为 Checkbox 标签添加图标
+/*  状态栏图标选择器样式
 /* =============================================== */
 
-/* 1. 为所有带图标的 label 设置一个通用的样式 */
-.checkbox-group[class*="icon-"] label {
-    display: flex; /* 使用 Flexbox 布局 */
-    align-items: center; /* 垂直居中对齐 */
-    gap: 6px; /* 设置图标和文字之间的间距 */
+.statusbar-icon-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 8px;
+    background-color: #c9c9c9; /* 给一个浅灰色背景 */
+    border-radius: 8px;
 }
 
-/* 2. 创建一个伪元素作为图标的容器 */
-.checkbox-group[class*="icon-"] label::before {
-    content: ''; /* 必须有 content 属性伪元素才会显示 */
-    display: inline-block;
-    width: 16px; /* 图标宽度 */
-    height: 16px; /* 图标高度 */
-    background-size: contain; /* 背景图完全包含在容器内 */
+.statusbar-icon-selector .icon-option {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    background-size: 60%; /* 让图标比容器小一点 */
     background-repeat: no-repeat;
     background-position: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    /* “关闭”状态：半透明 */
+    opacity: 0.5;
+    background-color: #009dff;
 }
 
-/* 3. 为每个唯一的 class 指定对应的图标图片 */
-/* 注意：路径 ../icons/ 是从 css 文件夹返回上一级再进入 icons 文件夹 */
-.icon-location label::before { background-image: url('../icons/IoslocatnighiIcon.png'); }
-.icon-alarm label::before    { background-image: url('../icons/IosalarmnighiIcon.png'); }
-.icon-bell label::before     { background-image: url('../icons/IosBellnighiIcon.png'); }
-.icon-user label::before     { background-image: url('../icons/IosusernighiIcon.png'); }
-.icon-sleep label::before    { background-image: url('../icons/IossleepnighiIcon.png'); }
-.icon-wifi label::before     { background-image: url('../icons/IosWifinighiIcon.png'); }
-.icon-lte label::before      { background-image: url('../icons/Ios5GnighiIcon.png'); }
+.statusbar-icon-selector .icon-option:hover {
+    background-color: #00b3ff;
+    
+}
+
+/* “开启”状态：不透明，有高亮背景 */
+.statusbar-icon-selector .icon-option.active {
+    opacity: 1;
+    background-color: var(--theme-color); /* 使用主题蓝色 */
+    /* 让白色图标在蓝色背景上可见 */
+    filter:  #009dff;
+}
+
+/* 使用我们之前为 label 定义的图标类 */
+.statusbar-icon-selector .icon-location { background-image: url('../icons/IoslocatIcon.png'); }
+.statusbar-icon-selector .icon-alarm    { background-image: url('../icons/IosalarmIcon.png'); }
+.statusbar-icon-selector .icon-bell     { background-image: url('../icons/IosBellIcon.png'); }
+.statusbar-icon-selector .icon-user     { background-image: url('../icons/IosuserIcon.png'); }
+.statusbar-icon-selector .icon-sleep    { background-image: url('../icons/IossleepIcon.png'); }
+.statusbar-icon-selector .icon-wifi     { background-image: url('../icons/IosWifiIcon.png'); }
+.statusbar-icon-selector .icon-lte      { background-image: url('../icons/Ios5GIcon.png'); }
+
+/* =============================================== */
+/* 商户头像图片选择器样式
+/* =============================================== */
+
+.merchant-icon-selector {
+    display: flex; /* Flex 布局，让图片横向排列 */
+    gap: 12px; /* 图片之间的间距 */
+    flex-wrap: wrap; /* 空间不够时自动换行 */
+    padding-top: 5px;
+}
+
+.merchant-icon-option {
+    width: 50px; /* 图片宽度 */
+    height: 50px; /* 图片高度 */
+    border-radius: 50%; /* 变为圆形 */
+    border: 3px solid transparent; /* 默认透明边框，用于占位 */
+    object-fit: cover; /* 确保图片不变形地填充满圆形 */
+    cursor: pointer; /* 鼠标悬停时显示小手图标 */
+    transition: all 0.2s ease-in-out; /* 平滑过渡效果 */
+}
+
+.merchant-icon-option:hover {
+    transform: scale(1.1); /* 鼠标悬停时轻微放大 */
+}
+
+/* “选中”状态的样式 */
+.merchant-icon-option.selected {
+    border-color: var(--theme-color); /* 边框变为主题蓝色 */
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5); /* 添加外发光效果 */
+}

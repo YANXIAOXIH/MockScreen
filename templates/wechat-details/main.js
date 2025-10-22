@@ -5,49 +5,64 @@ export function initialize() {
     const container = document.getElementById('template-controls-container');
     if (!container) return;
 
+    // --- 日期联动逻辑 ---
     const paymentTimeInput = container.querySelector('[data-id="paymentTime"]');
     const transactionIdInput = container.querySelector('[data-id="transactionId"]');
     const merchantIdInput = container.querySelector('[data-id="merchantId"]');
-
-    // 如果任何一个元素找不到，就提前退出，防止报错
-    if (!paymentTimeInput || !transactionIdInput || !merchantIdInput) {
-        console.warn('wechat-details: 缺少用于日期联动的输入框。');
-        return;
+    if (paymentTimeInput && transactionIdInput && merchantIdInput) {
+        const updateIdsBasedOnPaymentTime = () => {
+            const timeValue = paymentTimeInput.value;
+            if (!timeValue) return;
+            const dateString = timeValue.substring(0, 10).replace(/-/g, '');
+            const currentTransactionId = transactionIdInput.value;
+            const newTransactionId = currentTransactionId.substring(0, 10) + dateString + currentTransactionId.substring(18);
+            const currentMerchantId = merchantIdInput.value;
+            const newMerchantId = dateString + currentMerchantId.substring(8);
+            transactionIdInput.value = newTransactionId;
+            merchantIdInput.value = newMerchantId;
+            transactionIdInput.dispatchEvent(new Event('input'));
+            merchantIdInput.dispatchEvent(new Event('input'));
+        };
+        paymentTimeInput.addEventListener('input', updateIdsBasedOnPaymentTime);
+        updateIdsBasedOnPaymentTime();
     }
 
-    // 2. 定义一个核心处理函数，用于更新单号
-    const updateIdsBasedOnPaymentTime = () => {
-        const timeValue = paymentTimeInput.value; // 例如 "2025年10月17日 21:33:33"
-        
-        // 如果值为空，则不操作
-        if (!timeValue) return;
-
-        // 直接替换掉非数字字符，得到 YYYYMMDD 格式的日期
-        const dateString = timeValue.substring(0, 10).replace(/-/g, ''); // "2025-10-17" -> "20251017"
-
-        const currentTransactionId = transactionIdInput.value;
-        const currentMerchantId = merchantIdInput.value;
-
-        // 交易单号格式: 前10位 + 8位日期 + 剩余部分
-        const newTransactionId = currentTransactionId.substring(0, 10) + dateString + currentTransactionId.substring(18);
-        
-        // 商户单号格式: 8位日期 + 剩余部分
-        const newMerchantId = dateString + currentMerchantId.substring(8);
-
-        // 5. 将新生成的单号写回输入框
-        transactionIdInput.value = newTransactionId;
-        merchantIdInput.value = newMerchantId;
-
-        // 6. [关键] 手动触发事件，让 Canvas 更新
-        transactionIdInput.dispatchEvent(new Event('input'));
-        merchantIdInput.dispatchEvent(new Event('input'));
-    };
-
-    // 7. 为“支付时间”输入框绑定事件监听器
-    paymentTimeInput.addEventListener('input', updateIdsBasedOnPaymentTime);
-
-    // 8. (可选但推荐) 页面首次加载时也运行一次，确保初始状态是同步的
-    updateIdsBasedOnPaymentTime();
+    // --- 商户头像选择器逻辑 ---
+    const merchantIconSelector = container.querySelector('.merchant-icon-selector');
+    const merchantHiddenInput = container.querySelector('[data-id="merchantIconSelection"]');
+    if (merchantIconSelector && merchantHiddenInput) {
+        const merchantIconOptions = merchantIconSelector.querySelectorAll('.merchant-icon-option');
+        merchantIconOptions.forEach(icon => {
+            icon.addEventListener('click', (event) => {
+                merchantIconOptions.forEach(opt => opt.classList.remove('selected'));
+                const clickedIcon = event.currentTarget;
+                clickedIcon.classList.add('selected');
+                merchantHiddenInput.value = clickedIcon.dataset.assetKey;
+                merchantHiddenInput.dispatchEvent(new Event('input'));
+            });
+        });
+    }
+    
+    // --- 状态栏图标切换逻辑 ---
+    const statusBarIconSelector = container.querySelector('.statusbar-icon-selector');
+    if (statusBarIconSelector) {
+        const statusBarIconOptions = statusBarIconSelector.querySelectorAll('.icon-option');
+        statusBarIconOptions.forEach(icon => {
+            const targetId = icon.dataset.target;
+            const checkbox = container.querySelector(`.control[data-id="${targetId}"]`);
+            if (checkbox && checkbox.checked) {
+                icon.classList.add('active');
+            }
+            icon.addEventListener('click', (event) => {
+                const clickedIcon = event.currentTarget;
+                const targetCheckbox = container.querySelector(`.control[data-id="${clickedIcon.dataset.target}"]`);
+                if (!targetCheckbox) return;
+                clickedIcon.classList.toggle('active');
+                targetCheckbox.checked = clickedIcon.classList.contains('active');
+                targetCheckbox.dispatchEvent(new Event('input'));
+            });
+        });
+    }
 }
 
 export const template = {
@@ -66,7 +81,11 @@ export const template = {
 
         // 模板专属资源
         bg: 'templates/wechat-details/icons/background.png',
-        defaultMerchantIcon: 'templates/wechat-details/icons/close-icon.png', // 默认商户图标
+        defaultMerchantIcon1: 'icons/merchanticon1.png', // 默认商户图标
+        defaultMerchantIcon2: 'icons/merchanticon2.png', // 默认商户图标
+        defaultMerchantIcon3: 'icons/merchanticon3.png', // 默认商户图标
+        defaultMerchantIcon4: 'icons/merchanticon4.png', // 默认商户图标
+        defaultMerchantIcon5: 'icons/merchanticon5.png', // 默认商户图标
         billServiceStyle1: 'templates/wechat-details/icons/bill-service-1.png', // 账单服务样式一
         billServiceStyle2: 'templates/wechat-details/icons/bill-service-2.png', // 账单服务样式二
         billServiceStyle3: 'templates/wechat-details/icons/bill-service-3.png', // 账单服务样式三
@@ -134,16 +153,33 @@ export const template = {
     getControlsHTML: () => `
         <fieldset>
             <legend>顶部状态栏</legend>
-            <div class="input-group"><label>时间</label><input type="time" class="control" data-id="time" value="18:40"></div>
-            <div class="horizontal-controls-container">
-                <div class="checkbox-group icon-location"><input type="checkbox" class="control" data-id="locationToggle"><label>定位</label></div>
-                <div class="checkbox-group icon-alarm"><input type="checkbox" class="control" data-id="alarmIconToggle"><label>闹钟</label></div>
-                <div class="checkbox-group icon-bell"><input type="checkbox" class="control" data-id="bellIconToggle"><label>铃声</label></div>
-                <div class="checkbox-group icon-user"><input type="checkbox" class="control" data-id="userIconToggle"><label>个人</label></div>
-                <div class="checkbox-group icon-sleep"><input type="checkbox" class="control" data-id="sleepIconToggle"><label>睡眠</label></div>
-                <div class="checkbox-group icon-wifi"><input type="checkbox" class="control" data-id="wifiIconToggle"><label>wifi</label></div>
-                <div class="checkbox-group icon-lte"><input type="checkbox" class="control" data-id="lteIconToggle"checked><label>信号</label></div>
+            <div class="input-group">
+                <label>状态栏图标</label>
+                <div class="statusbar-icon-selector">
+                    <div class="icon-option icon-location" data-target="locationToggle"></div>
+                    <input type="checkbox" class="control" data-id="locationToggle" style="display: none;">
+
+                    <div class="icon-option icon-alarm" data-target="alarmIconToggle"></div>
+                    <input type="checkbox" class="control" data-id="alarmIconToggle" style="display: none;">
+
+                    <div class="icon-option icon-bell" data-target="bellIconToggle"></div>
+                    <input type="checkbox" class="control" data-id="bellIconToggle" style="display: none;">
+                    
+                    <div class="icon-option icon-user" data-target="userIconToggle"></div>
+                    <input type="checkbox" class="control" data-id="userIconToggle" style="display: none;">
+
+                    <div class="icon-option icon-sleep" data-target="sleepIconToggle"></div>
+                    <input type="checkbox" class="control" data-id="sleepIconToggle" style="display: none;">
+
+                    <div class="icon-option icon-wifi" data-target="wifiIconToggle"></div>
+                    <input type="checkbox" class="control" data-id="wifiIconToggle" style="display: none;">
+
+                    <div class="icon-option icon-lte active" data-target="lteIconToggle"></div>
+                    <input type="checkbox" class="control" data-id="lteIconToggle" checked style="display: none;">
+                </div>
             </div>
+            
+            <div class="input-group"><label>时间</label><input type="time" class="control" data-id="time" value="18:40"></div>
 
             <div class="input-group">
                 <label>电池电量: <span class="control-value" data-id="batteryValue">80</span>%</label>
@@ -153,12 +189,23 @@ export const template = {
 
         <fieldset>
             <legend>核心信息</legend>
-            <div class="input-group">
-                <label>商户头像</label>
-                <input type="file" class="control" data-id="merchantIcon">
-            </div>
             <div class="input-group"><label>商户名称</label><input type="text" class="control" data-id="merchantName" value="简知"></div>
             <div class="input-group"><label>金额</label><input type="text" class="control" data-id="amount" value="4680"></div>
+            <div class="input-group">
+                <label>商户头像</label>
+                <div class="merchant-icon-selector">
+                    <img src="icons/merchanticon1.png" class="merchant-icon-option" data-asset-key="defaultMerchantIcon1">
+                    <img src="icons/merchanticon2.png" class="merchant-icon-option" data-asset-key="defaultMerchantIcon2">
+                    <img src="icons/merchanticon3.png" class="merchant-icon-option selected" data-asset-key="defaultMerchantIcon3">
+                    <img src="icons/merchanticon4.png" class="merchant-icon-option" data-asset-key="defaultMerchantIcon4">
+                    <img src="icons/merchanticon5.png" class="merchant-icon-option" data-asset-key="defaultMerchantIcon5">
+                </div>
+                <input type="hidden" class="control" data-id="merchantIconSelection" value="defaultMerchantIcon1">
+            </div>
+            <div class="input-group">
+                <label>上传自定义头像</label>
+                <input type="file" class="control" data-id="merchantIcon">
+            </div>
         </fieldset>
         
         <fieldset>
@@ -203,7 +250,7 @@ export const template = {
         ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
         ctx.drawImage(assets.bg, 0, 0);
 
-        // --- 2. 绘制状态栏 (逻辑不变) ---
+        // --- 2. 绘制状态栏 ---
         const st = config.statusBar;
         ctx.fillStyle = config.colors.statusBar;
         ctx.font = st.timeFont;
@@ -258,16 +305,23 @@ export const template = {
             ctx.fill();
         }
 
-        // --- 4. 绘制核心信息 ---
+        // --- 3. 绘制核心信息 ---
         const mc = config.mainContent;
-        const merchantIcon = controls.merchantIcon || assets.defaultMerchantIcon;
-        if (merchantIcon) {
+
+        let iconToDraw = null;
+        if (controls.merchantIcon) { // 优先使用上传的头像
+            iconToDraw = controls.merchantIcon;
+        } else if (controls.merchantIconSelection && assets[controls.merchantIconSelection]) { // 其次使用选择的内置头像
+            iconToDraw = assets[controls.merchantIconSelection];
+        }
+        
+        if (iconToDraw) {
             ctx.save();
             ctx.beginPath();
             const iconX = config.canvasWidth / 2 - mc.merchantIconSize / 2;
             ctx.arc(iconX + mc.merchantIconSize / 2, mc.merchantIconY + mc.merchantIconSize / 2, mc.merchantIconSize / 2, 0, Math.PI * 2);
             ctx.clip();
-            ctx.drawImage(merchantIcon, iconX, mc.merchantIconY, mc.merchantIconSize, mc.merchantIconSize);
+            ctx.drawImage(iconToDraw, iconX, mc.merchantIconY, mc.merchantIconSize, mc.merchantIconSize);
             ctx.restore();
         }
         ctx.textAlign = 'center';
@@ -277,7 +331,7 @@ export const template = {
         ctx.font = mc.amountFont;
         ctx.fillText(`-${parseFloat(controls.amount || 0).toFixed(2)}`, config.canvasWidth / 2, mc.amountY);
 
-        // --- 5. 绘制账单详情列表 ---
+        // --- 4. 绘制账单详情列表 ---
         const dl = config.detailsList;
         let currentY = dl.startY;
         
@@ -318,15 +372,15 @@ export const template = {
         }
         
         drawDetailRow('当前状态', controls.status);
-        drawDetailRow('支付时间', formattedPaymentTime); // 使用新变量
+        drawDetailRow('支付时间', formattedPaymentTime);
         drawDetailRow('商品', controls.product);
         drawDetailRow('商户全称', controls.merchantFullName);
         drawDetailRow('收单机构', controls.acquirer, controls.acquirerSub);
-        drawDetailRow('支付方式', controls.paymentMethod, controls.paymentMethodSub, true);
+        drawDetailRow('支付方式', controls.paymentMethod, controls.paymentMethodSub);
         drawDetailRow('交易单号', controls.transactionId);
         drawDetailRow('商户单号', controls.merchantId);
 
-        // --- 6. 绘制账单服务 ---
+        // --- 5. 绘制账单服务 ---
         const bs = config.billServices;
 
         const selectedServiceImage = assets[`billServiceStyle${controls.billServiceSelection.slice(-1)}`];

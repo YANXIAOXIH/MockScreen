@@ -5,55 +5,85 @@ export function initialize(drawCanvasCallback) {
     const container = document.getElementById('template-controls-container');
     if (!container) return;
 
-    // [修正] 通过 name 属性找到所有单选按钮
+    // --- 支付宝账单管理联动 ---
     const managementRadios = container.querySelectorAll('input[name="billManagementChoiceRadios"]');
     // [修正] 找到用于联动的文本输入框
     const categoryNameInput = container.querySelector('input[data-id="billCategoryName"]');
     // [修正] 找到用于存储最终值的隐藏输入框
     const hiddenChoiceInput = container.querySelector('input[data-id="billManagementChoice"]');
 
-    managementRadios.forEach(radio => {
-        radio.addEventListener('change', (event) => {
-            const currentRadio = event.target;
-            if (currentRadio.checked && categoryNameInput && hiddenChoiceInput) {
-                // 1. 更新隐藏输入框的值 (e.g., 'style1')
-                hiddenChoiceInput.value = currentRadio.value;
-                
-                // 2. 更新可见的分类名称输入框的文本
-                categoryNameInput.value = currentRadio.nextElementSibling.textContent;
-
-                // 3. 在隐藏输入框上触发事件，通知主程序更新画布
-                hiddenChoiceInput.dispatchEvent(new Event('input'));
-                
-                // 4. 同时也在可见输入框上触发事件，以防有其他逻辑依赖它
-                categoryNameInput.dispatchEvent(new Event('input'));
-            }
+    if (managementRadios.length > 0 && categoryNameInput && hiddenChoiceInput) {
+        managementRadios.forEach(radio => {
+            radio.addEventListener('change', (event) => {
+                const currentRadio = event.target;
+                if (currentRadio.checked) {
+                    hiddenChoiceInput.value = currentRadio.value;
+                    categoryNameInput.value = currentRadio.nextElementSibling.textContent;
+                    hiddenChoiceInput.dispatchEvent(new Event('input'));
+                    categoryName-input.dispatchEvent(new Event('input'));
+                }
+            });
         });
-    });
-
-    // 页面首次加载时，确保所有值都正确同步
-    const checkedRadio = container.querySelector('input[name="billManagementChoiceRadios"]:checked');
-    if (checkedRadio && categoryNameInput && hiddenChoiceInput) {
-        hiddenChoiceInput.value = checkedRadio.value;
-        categoryNameInput.value = checkedRadio.nextElementSibling.textContent;
+        const checkedRadio = container.querySelector('input[name="billManagementChoiceRadios"]:checked');
+        if (checkedRadio) {
+            hiddenChoiceInput.value = checkedRadio.value;
+            categoryNameInput.value = checkedRadio.nextElementSibling.textContent;
+        }
     }
     
-    // --- [新增] 处理支付奖励联动 ---
+    // --- 支付宝支付奖励联动 ---
     const rewardRadios = container.querySelectorAll('input[name="paymentRewardChoiceRadios"]');
     const hiddenRewardInput = container.querySelector('input[data-id="paymentRewardChoice"]');
-    
-    rewardRadios.forEach(radio => {
-        radio.addEventListener('change', (event) => {
-            if(event.target.checked && hiddenRewardInput) {
-                hiddenRewardInput.value = event.target.value;
-                hiddenRewardInput.dispatchEvent(new Event('input'));
-            }
+    if (rewardRadios.length > 0 && hiddenRewardInput) {
+        rewardRadios.forEach(radio => {
+            radio.addEventListener('change', (event) => {
+                if(event.target.checked) {
+                    hiddenRewardInput.value = event.target.value;
+                    hiddenRewardInput.dispatchEvent(new Event('input'));
+                }
+            });
         });
-    });
+        const checkedRewardRadio = container.querySelector('input[name="paymentRewardChoiceRadios"]:checked');
+        if(checkedRewardRadio) {
+            hiddenRewardInput.value = checkedRewardRadio.value;
+        }
+    }
+
+    // --- 商户头像选择器逻辑 ---
+    const merchantIconSelector = container.querySelector('.merchant-icon-selector');
+    const merchantHiddenInput = container.querySelector('[data-id="merchantIconSelection"]');
+    if (merchantIconSelector && merchantHiddenInput) {
+        const merchantIconOptions = merchantIconSelector.querySelectorAll('.merchant-icon-option');
+        merchantIconOptions.forEach(icon => {
+            icon.addEventListener('click', (event) => {
+                merchantIconOptions.forEach(opt => opt.classList.remove('selected'));
+                const clickedIcon = event.currentTarget;
+                clickedIcon.classList.add('selected');
+                merchantHiddenInput.value = clickedIcon.dataset.assetKey;
+                merchantHiddenInput.dispatchEvent(new Event('input'));
+            });
+        });
+    }
     
-    const checkedRewardRadio = container.querySelector('input[name="paymentRewardChoiceRadios"]:checked');
-    if(checkedRewardRadio && hiddenRewardInput) {
-        hiddenRewardInput.value = checkedRewardRadio.value;
+    // --- 状态栏图标切换逻辑 ---
+    const statusBarIconSelector = container.querySelector('.statusbar-icon-selector');
+    if (statusBarIconSelector) {
+        const statusBarIconOptions = statusBarIconSelector.querySelectorAll('.icon-option');
+        statusBarIconOptions.forEach(icon => {
+            const targetId = icon.dataset.target;
+            const checkbox = container.querySelector(`.control[data-id="${targetId}"]`);
+            if (checkbox && checkbox.checked) {
+                icon.classList.add('active');
+            }
+            icon.addEventListener('click', (event) => {
+                const clickedIcon = event.currentTarget;
+                const targetCheckbox = container.querySelector(`.control[data-id="${clickedIcon.dataset.target}"]`);
+                if (!targetCheckbox) return;
+                clickedIcon.classList.toggle('active');
+                targetCheckbox.checked = clickedIcon.classList.contains('active');
+                targetCheckbox.dispatchEvent(new Event('input'));
+            });
+        });
     }
 }
 
@@ -67,9 +97,16 @@ export const template = {
         sleepIcon: 'icons/IossleepnighiIcon.png',
         wifiIcon: 'icons/IosWifinighiIcon.png',
         lteIcon: 'icons/Ios5GnighiIcon.png',
+
+        // 商户图标
+        defaultMerchantIcon1: 'icons/merchanticon1.png', 
+        defaultMerchantIcon2: 'icons/merchanticon2.png',
+        defaultMerchantIcon3: 'icons/merchanticon3.png',
+        defaultMerchantIcon4: 'icons/merchanticon4.png',
+        defaultMerchantIcon5: 'icons/merchanticon5.png',
+
         // 背景
         bg: 'templates/alipay-details/icons/background.png',
-        shopIcon: 'templates/alipay-details/icons/shop-icon.png',
         billManagementStyle1: 'templates/alipay-details/icons/bill-management-1.png',
         billManagementStyle2: 'templates/alipay-details/icons/bill-management-2.png',
         billManagementStyle3: 'templates/alipay-details/icons/bill-management-3.png',
@@ -101,7 +138,7 @@ export const template = {
         
         // --- 中间核心信息卡片 ---
         mainCard: { 
-            shopIconY: 385, 
+            shopIconY: 383, 
             shopiconsize: 138, 
             shopNameY: 595, 
             shopNameFont: '48px "PingFang"', 
@@ -150,16 +187,34 @@ export const template = {
     getControlsHTML: () => `
         <fieldset>
             <legend>顶部状态栏</legend>
-            <div class="input-group"><label>时间</label><input type="time" class="control" data-id="time" value="21:10"></div>
-            <div class="horizontal-controls-container">
-                <div class="checkbox-group icon-location"><input type="checkbox" class="control" data-id="locationToggle"><label>定位</label></div>
-                <div class="checkbox-group icon-alarm"><input type="checkbox" class="control" data-id="alarmIconToggle"><label>闹钟</label></div>
-                <div class="checkbox-group icon-bell"><input type="checkbox" class="control" data-id="bellIconToggle"><label>铃声</label></div>
-                <div class="checkbox-group icon-user"><input type="checkbox" class="control" data-id="userIconToggle"><label>个人</label></div>
-                <div class="checkbox-group icon-sleep"><input type="checkbox" class="control" data-id="sleepIconToggle"><label>睡眠</label></div>
-                <div class="checkbox-group icon-wifi"><input type="checkbox" class="control" data-id="wifiIconToggle"><label>wifi</label></div>
-                <div class="checkbox-group icon-lte"><input type="checkbox" class="control" data-id="lteIconToggle"checked><label>信号</label></div>
+
+            <div class="input-group">
+                <label>状态栏图标</label>
+                <div class="statusbar-icon-selector">
+                    <div class="icon-option icon-location" data-target="locationToggle"></div>
+                    <input type="checkbox" class="control" data-id="locationToggle" style="display: none;">
+
+                    <div class="icon-option icon-alarm" data-target="alarmIconToggle"></div>
+                    <input type="checkbox" class="control" data-id="alarmIconToggle" style="display: none;">
+
+                    <div class="icon-option icon-bell" data-target="bellIconToggle"></div>
+                    <input type="checkbox" class="control" data-id="bellIconToggle" style="display: none;">
+                    
+                    <div class="icon-option icon-user" data-target="userIconToggle"></div>
+                    <input type="checkbox" class="control" data-id="userIconToggle" style="display: none;">
+
+                    <div class="icon-option icon-sleep" data-target="sleepIconToggle"></div>
+                    <input type="checkbox" class="control" data-id="sleepIconToggle" style="display: none;">
+
+                    <div class="icon-option icon-wifi" data-target="wifiIconToggle"></div>
+                    <input type="checkbox" class="control" data-id="wifiIconToggle" style="display: none;">
+
+                    <div class="icon-option icon-lte active" data-target="lteIconToggle"></div>
+                    <input type="checkbox" class="control" data-id="lteIconToggle" checked style="display: none;">
+                </div>
             </div>
+            
+            <div class="input-group"><label>时间</label><input type="time" class="control" data-id="time" value="21:10"></div>
 
             <div class="input-group"><label>电池电量: <span class="control-value" data-id="batteryValue">36</span>%</label><input type="range" class="control" data-id="battery" min="0" max="100" value="56"></div>
         </fieldset>
@@ -167,7 +222,22 @@ export const template = {
         <fieldset>
             <legend>核心信息</legend>
             <div class="input-group"><label>商户名称</label><input type="text" class="control" data-id="shopName" value="简知"></div>
-            <div class="input-group"><label>金额 (输入正数)</label><input type="text" class="control" data-id="amount" value="4680"></div>
+            <div class="input-group"><label>金额</label><input type="text" class="control" data-id="amount" value="4680"></div>
+            <div class="input-group">
+                <label>商户头像</label>
+                <div class="merchant-icon-selector">
+                    <img src="icons/merchanticon1.png" class="merchant-icon-option selected" data-asset-key="defaultMerchantIcon1">
+                    <img src="icons/merchanticon2.png" class="merchant-icon-option" data-asset-key="defaultMerchantIcon2">
+                    <img src="icons/merchanticon3.png" class="merchant-icon-option" data-asset-key="defaultMerchantIcon3">
+                    <img src="icons/merchanticon4.png" class="merchant-icon-option" data-asset-key="defaultMerchantIcon4">
+                    <img src="icons/merchanticon5.png" class="merchant-icon-option" data-asset-key="defaultMerchantIcon5">
+                </div>
+                <input type="hidden" class="control" data-id="merchantIconSelection" value="defaultMerchantIcon1">
+            </div>
+            <div class="input-group">
+                <label>上传自定义头像</label>
+                <input type="file" class="control" data-id="merchantIcon">
+            </div>
         </fieldset>
         
         <fieldset>
@@ -226,17 +296,6 @@ export const template = {
         ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
         ctx.drawImage(assets.bg, 0, 0);
 
-        // 定义一个辅助函数来绘制并更新X坐标
-        function drawAndAdvanceIcon(controlKey, asset, height, gap) {
-            if (controls[controlKey] && asset) {
-                const calculatedWidth = height * (asset.width / asset.height);
-                ctx.drawImage(asset, currentIconX, iconY, calculatedWidth, height);
-                currentIconX += calculatedWidth + gap;
-                return true; // 表示成功绘制
-            }
-            return false; // 表示未绘制
-        }
-
         // 绘制顶部状态栏
         const st = config.statusBar;
         ctx.fillStyle = config.colors.statusBar;
@@ -247,19 +306,14 @@ export const template = {
 
         // --- 绘制左侧图标 ---
         let currentIconX = st.iconstartX;
-        // [修正] 动态计算图标的垂直中心位置
         const iconY = st.baseY - (st.iconHeight / 2);
-
-
-        function drawAndAdvanceIcon(controlKey, asset, height, gap) {
+        const drawAndAdvanceIcon = (controlKey, asset, height, gap) => {
             if (controls[controlKey] && asset) {
                 const calculatedWidth = height * (asset.width / asset.height);
                 ctx.drawImage(asset, currentIconX, iconY, calculatedWidth, height);
                 currentIconX += calculatedWidth + gap;
             }
-        }
-        
-        // [修正] 传入正确的 config 属性名：st.iconHeight 和 st.IconGap
+        };
         drawAndAdvanceIcon('locationToggle', assets.locationIcon, st.iconHeight, st.IconGap);
         drawAndAdvanceIcon('alarmIconToggle', assets.alarmIcon, st.iconHeight, st.IconGap);
         drawAndAdvanceIcon('bellIconToggle', assets.bellIcon, st.iconHeight, st.IconGap);
@@ -274,7 +328,7 @@ export const template = {
 
         // --- 绘制右侧图标 ---
         let currentSignalX = st.batteryX; // 从电池左侧开始
-
+        const iconY_signal = st.baseY - (st.signalIconHeight / 2);
         //  WiFi 图标
         if (controls.wifiIconToggle && assets.wifiIcon) {
             const asset = assets.wifiIcon;
@@ -293,7 +347,6 @@ export const template = {
             const calculatedWidth = st.signalIconHeight * (asset.width / asset.height);
             // [修正] 使用 st.IconGap 作为信号和WiFi之间的间距
             const iconX = currentSignalX - st.IconGap - calculatedWidth;
-            const iconY_signal = st.baseY - (st.signalIconHeight / 2);
             ctx.drawImage(asset, iconX, iconY_signal, calculatedWidth, st.signalIconHeight);
         }
 
@@ -309,7 +362,37 @@ export const template = {
         // --- 2. 绘制中间核心信息卡片 ---
         const mc = config.mainCard;
         // 绘制商铺图标
-        if (assets.shopIcon) ctx.drawImage(assets.shopIcon, config.canvasWidth / 2 - mc.shopiconsize / 2, mc.shopIconY, mc.shopiconsize, mc.shopiconsize);
+
+        // [修正] 使用新的、更智能的头像选择逻辑
+        let iconToDraw = null;
+        if (controls.merchantIcon) { // 优先使用上传的头像
+            iconToDraw = controls.merchantIcon;
+        } else if (controls.merchantIconSelection && assets[controls.merchantIconSelection]) { // 其次使用选择的内置头像
+            iconToDraw = assets[controls.merchantIconSelection];
+        }
+        
+        // 使用 alipay-details 的配置
+        if (iconToDraw) {
+            const iconSize = mc.shopiconsize;
+            const iconX = (config.canvasWidth - iconSize) / 2;
+            const iconY = mc.shopIconY;
+
+            // --- 开始圆形裁切 ---
+            ctx.save(); // 1. 保存当前画布状态
+            ctx.beginPath(); // 2. 开始一个新的路径
+            
+            // 3. 创建一个圆形路径 (arc的x,y是圆心坐标)
+            ctx.arc(iconX + iconSize / 2, iconY + iconSize / 2, iconSize / 2, 0, Math.PI * 2);
+            
+            // 4. 将这个圆形路径设置为“裁切区域”
+            ctx.clip(); 
+            
+            // 5. 在这个圆形区域内绘制我们的(方形)图片
+            ctx.drawImage(iconToDraw, iconX, iconY, iconSize, iconSize);
+            
+            // 6. 恢复画布状态，移除裁切效果，以免影响后续绘制
+            ctx.restore(); 
+        }
         
         // 绘制商户名称和金额
         ctx.font = mc.shopNameFont; ctx.fillStyle = '#333333'; ctx.textAlign = 'center';

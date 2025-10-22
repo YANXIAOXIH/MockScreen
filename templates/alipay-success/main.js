@@ -44,6 +44,27 @@ export function initialize(drawCanvasCallback) {
             drawCanvasCallback();
         });
     });
+
+    // --- 状态栏图标切换逻辑 ---
+    const statusBarIconSelector = container.querySelector('.statusbar-icon-selector');
+    if (statusBarIconSelector) {
+        const statusBarIconOptions = statusBarIconSelector.querySelectorAll('.icon-option');
+        statusBarIconOptions.forEach(icon => {
+            const targetId = icon.dataset.target;
+            const checkbox = container.querySelector(`.control[data-id="${targetId}"]`);
+            if (checkbox && checkbox.checked) {
+                icon.classList.add('active');
+            }
+            icon.addEventListener('click', (event) => {
+                const clickedIcon = event.currentTarget;
+                const targetCheckbox = container.querySelector(`.control[data-id="${clickedIcon.dataset.target}"]`);
+                if (!targetCheckbox) return;
+                clickedIcon.classList.toggle('active');
+                targetCheckbox.checked = clickedIcon.classList.contains('active');
+                targetCheckbox.dispatchEvent(new Event('input'));
+            });
+        });
+    }
 }
 
 // 导出该模板的完整配置对象
@@ -128,17 +149,35 @@ export const template = {
     getControlsHTML: () => `
         <fieldset>
             <legend>顶部状态栏</legend>
+            
+            <div class="input-group">
+                <label>状态栏图标</label>
+                <div class="statusbar-icon-selector">
+                    <div class="icon-option icon-location" data-target="locationToggle"></div>
+                    <input type="checkbox" class="control" data-id="locationToggle" style="display: none;">
+
+                    <div class="icon-option icon-alarm" data-target="alarmIconToggle"></div>
+                    <input type="checkbox" class="control" data-id="alarmIconToggle" style="display: none;">
+
+                    <div class="icon-option icon-bell" data-target="bellIconToggle"></div>
+                    <input type="checkbox" class="control" data-id="bellIconToggle" style="display: none;">
+                    
+                    <div class="icon-option icon-user" data-target="userIconToggle"></div>
+                    <input type="checkbox" class="control" data-id="userIconToggle" style="display: none;">
+
+                    <div class="icon-option icon-sleep" data-target="sleepIconToggle"></div>
+                    <input type="checkbox" class="control" data-id="sleepIconToggle" style="display: none;">
+
+                    <div class="icon-option icon-wifi" data-target="wifiIconToggle"></div>
+                    <input type="checkbox" class="control" data-id="wifiIconToggle" style="display: none;">
+
+                    <div class="icon-option icon-lte active" data-target="lteIconToggle"></div>
+                    <input type="checkbox" class="control" data-id="lteIconToggle" checked style="display: none;">
+                </div>
+            </div>
+
             <div class="input-group"><label>时间</label><input type="time" class="control" data-id="time" value="03:00"></div>
 
-            <div class="horizontal-controls-container">
-                <div class="checkbox-group icon-location"><input type="checkbox" class="control" data-id="locationToggle"><label>定位</label></div>
-                <div class="checkbox-group icon-alarm"><input type="checkbox" class="control" data-id="alarmIconToggle"><label>闹钟</label></div>
-                <div class="checkbox-group icon-bell"><input type="checkbox" class="control" data-id="bellIconToggle"><label>铃声</label></div>
-                <div class="checkbox-group icon-user"><input type="checkbox" class="control" data-id="userIconToggle"><label>个人</label></div>
-                <div class="checkbox-group icon-sleep"><input type="checkbox" class="control" data-id="sleepIconToggle"><label>睡眠</label></div>
-                <div class="checkbox-group icon-wifi"><input type="checkbox" class="control" data-id="wifiIconToggle"><label>wifi</label></div>
-                <div class="checkbox-group icon-lte"><input type="checkbox" class="control" data-id="lteIconToggle"checked><label>信号</label></div>
-            </div>
 
             <div class="input-group">
                 <label>电池电量: <span class="control-value" data-id="batteryValue">100</span>%</label>
