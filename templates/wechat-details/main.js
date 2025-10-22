@@ -155,7 +155,6 @@ export const template = {
             <legend>核心信息</legend>
             <div class="input-group">
                 <label>商户头像</label>
-                <div class="checkbox-group icon-lte"><input type="checkbox" class="control" data-id="lteIconToggle"checked><label>信号</label></div>
                 <input type="file" class="control" data-id="merchantIcon">
             </div>
             <div class="input-group"><label>商户名称</label><input type="text" class="control" data-id="merchantName" value="简知"></div>
