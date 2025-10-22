@@ -54,11 +54,11 @@ export const template = {
         
         // --- 顶部微信支付通知 ---
         notification: {
-            y: 130,                   // 整个通知图片顶部的Y坐标
-            amountX: 390,                 // 动态金额文字的X坐标
-            amountY: 305,                 // 动态金额文字的Y坐标
+            y: 133,                   // 整个通知图片顶部的Y坐标
+            amountX: 389,                 // 动态金额文字的X坐标
+            amountY: 308,                 // 动态金额文字的Y坐标
             amountFont: '40px "PingFang"', // 动态金额文字的字体
-            amountColor: '#1a1a1a'         // 动态金额文字的颜色
+            amountColor: '#6e6e6e'         // 动态金额文字的颜色
         },
 
         // --- 核心支付信息 ---
@@ -131,7 +131,8 @@ export const template = {
                 <label>爱心助力</label>
                 <input type="text" class="control" data-id="helpLinkText" value="助力乡村儿童营养改善">
                 <div class="quick-buttons">
-                    <button data-target="helpLinkText" data-value="助力乡村儿童营养改善">乡村儿童</button>
+                    <button data-target="helpLinkText" data-value="助力乡村幼童科学养育">幼童科学</button>
+                    <button data-target="helpLinkText" data-value="助力乡村儿童营养改善">儿童营养</button>
                     <button data-target="helpLinkText" data-value="关爱亚洲黑熊">亚洲黑熊</button>
                     <button data-target="helpLinkText" data-value="为环卫工人送爱心餐">环卫工人</button>
                 </div>
