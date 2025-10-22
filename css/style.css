@@ -110,3 +110,36 @@ textarea.control:focus {
 .page-footer a:hover {
     text-decoration: underline; /* 鼠标悬停时显示下划线 */
 }
+
+
+/* =============================================== */
+/*  [新增] 为 Checkbox 标签添加图标
+/* =============================================== */
+
+/* 1. 为所有带图标的 label 设置一个通用的样式 */
+.checkbox-group[class*="icon-"] label {
+    display: flex; /* 使用 Flexbox 布局 */
+    align-items: center; /* 垂直居中对齐 */
+    gap: 6px; /* 设置图标和文字之间的间距 */
+}
+
+/* 2. 创建一个伪元素作为图标的容器 */
+.checkbox-group[class*="icon-"] label::before {
+    content: ''; /* 必须有 content 属性伪元素才会显示 */
+    display: inline-block;
+    width: 16px; /* 图标宽度 */
+    height: 16px; /* 图标高度 */
+    background-size: contain; /* 背景图完全包含在容器内 */
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* 3. 为每个唯一的 class 指定对应的图标图片 */
+/* 注意：路径 ../icons/ 是从 css 文件夹返回上一级再进入 icons 文件夹 */
+.icon-location label::before { background-image: url('../icons/IoslocatnighiIcon.png'); }
+.icon-alarm label::before    { background-image: url('../icons/IosalarmnighiIcon.png'); }
+.icon-bell label::before     { background-image: url('../icons/IosBellnighiIcon.png'); }
+.icon-user label::before     { background-image: url('../icons/IosusernighiIcon.png'); }
+.icon-sleep label::before    { background-image: url('../icons/IossleepnighiIcon.png'); }
+.icon-wifi label::before     { background-image: url('../icons/IosWifinighiIcon.png'); }
+.icon-lte label::before      { background-image: url('../icons/Ios5GnighiIcon.png'); }

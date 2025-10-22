@@ -133,16 +133,16 @@ export const template = {
     // =================================================================================
     getControlsHTML: () => `
         <fieldset>
-            <legend>顶部状态栏 (复用)</legend>
+            <legend>顶部状态栏</legend>
             <div class="input-group"><label>时间</label><input type="time" class="control" data-id="time" value="18:40"></div>
             <div class="horizontal-controls-container">
-                <div class="checkbox-group"><input type="checkbox" class="control" data-id="locationToggle"><label>定位</label></div>
-                <div class="checkbox-group"><input type="checkbox" class="control" data-id="alarmIconToggle"><label>闹钟</label></div>
-                <div class="checkbox-group"><input type="checkbox" class="control" data-id="bellIconToggle"><label>铃声</label></div>
-                <div class="checkbox-group"><input type="checkbox" class="control" data-id="userIconToggle"><label>个人</label></div>
-                <div class="checkbox-group"><input type="checkbox" class="control" data-id="sleepIconToggle"><label>睡眠</label></div>
-                <div class="checkbox-group"><input type="checkbox" class="control" data-id="wifiIconToggle"><label>wifi</label></div>
-                <div class="checkbox-group"><input type="checkbox" class="control" data-id="lteIconToggle"checked><label>信号</label></div>
+                <div class="checkbox-group icon-location"><input type="checkbox" class="control" data-id="locationToggle"><label>定位</label></div>
+                <div class="checkbox-group icon-alarm"><input type="checkbox" class="control" data-id="alarmIconToggle"><label>闹钟</label></div>
+                <div class="checkbox-group icon-bell"><input type="checkbox" class="control" data-id="bellIconToggle"><label>铃声</label></div>
+                <div class="checkbox-group icon-user"><input type="checkbox" class="control" data-id="userIconToggle"><label>个人</label></div>
+                <div class="checkbox-group icon-sleep"><input type="checkbox" class="control" data-id="sleepIconToggle"><label>睡眠</label></div>
+                <div class="checkbox-group icon-wifi"><input type="checkbox" class="control" data-id="wifiIconToggle"><label>wifi</label></div>
+                <div class="checkbox-group icon-lte"><input type="checkbox" class="control" data-id="lteIconToggle"checked><label>信号</label></div>
             </div>
 
             <div class="input-group">
@@ -155,6 +155,7 @@ export const template = {
             <legend>核心信息</legend>
             <div class="input-group">
                 <label>商户头像</label>
+                <div class="checkbox-group icon-lte"><input type="checkbox" class="control" data-id="lteIconToggle"checked><label>信号</label></div>
                 <input type="file" class="control" data-id="merchantIcon">
             </div>
             <div class="input-group"><label>商户名称</label><input type="text" class="control" data-id="merchantName" value="简知"></div>
