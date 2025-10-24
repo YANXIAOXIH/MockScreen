@@ -125,22 +125,30 @@ textarea.control:focus {
 }
 
 .statusbar-icon-selector .icon-option {
-    width: 30px;
-    height: 30px;
+    width: 31px;
+    height: 31px;
     border-radius: 6px;
-    background-size: 60%; /* 让图标比容器小一点 */
+    background-size: 60%; /* 默认尺寸，对系统图标很友好 */
     background-repeat: no-repeat;
     background-position: center;
     cursor: pointer;
     transition: all 0.2s ease;
     
     /* “关闭”状态：半透明 */
-    opacity: 0.5;
+    opacity: 1;
     background-color: #009dff;
 }
 
+/* 
+  第三方应用图标的覆盖样式 
+*/
+.statusbar-icon-selector .icon-option.app-icon {
+    background-size: 100%; /* 或者使用 cover，让图标完全填满容器 */
+    border-radius: 8px;    /* 可以为第三方图标设置一个稍大的圆角，使其看起来更像App图标 */
+}
+
 .statusbar-icon-selector .icon-option:hover {
-    background-color: #00b3ff;
+    background-color: #009dff;
     
 }
 
@@ -149,17 +157,101 @@ textarea.control:focus {
     opacity: 1;
     background-color: var(--theme-color); /* 使用主题蓝色 */
     /* 让白色图标在蓝色背景上可见 */
-    filter:  #009dff;
+    /*filter:  #009dff;*/
 }
 
-/* 使用我们之前为 label 定义的图标类 */
-.statusbar-icon-selector .icon-location { background-image: url('../icons/IoslocatIcon.png'); }
-.statusbar-icon-selector .icon-alarm    { background-image: url('../icons/IosalarmIcon.png'); }
-.statusbar-icon-selector .icon-bell     { background-image: url('../icons/IosBellIcon.png'); }
-.statusbar-icon-selector .icon-user     { background-image: url('../icons/IosuserIcon.png'); }
-.statusbar-icon-selector .icon-sleep    { background-image: url('../icons/IossleepIcon.png'); }
-.statusbar-icon-selector .icon-wifi     { background-image: url('../icons/IosWifiIcon.png'); }
-.statusbar-icon-selector .icon-lte      { background-image: url('../icons/Ios5GIcon.png'); }
+/* 活动行的父容器 */
+.is-active-dropzone-container {
+    background-color: #e9ecef;
+    border: 1px solid #ced4da;
+    display: flex;
+    padding: 8px;
+    gap: 4px;
+    border-radius: 8px;
+}
+
+/* 放置区统一样式 */
+.icon-sub-dropzone {
+    display: flex;
+    flex-wrap: wrap; /* 允许图标换行 */
+    gap: 10px;
+    min-height: 31px; /* 确保空的时候也有高度和可点击区域 */
+    min-width: 350px;  /* 确保空的时候有宽度 */
+    padding: 4px;
+    border: 2px dashed transparent; /* 默认透明边框 */
+    border-radius: 6px;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+/* 可用图标库样式 */
+.is-available-dropzone {
+    background-color: #e9ecef;
+    border: 1px solid #ced4da;
+    padding: 8px;
+    gap: 10px;
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+/* 当有图标拖拽到放置区域上方时，高亮边框作为视觉反馈 */
+.icon-sub-dropzone.drag-over,
+.is-available-dropzone.drag-over {
+    border-color: var(--theme-color);
+    background-color: #e7f3ff;
+}
+
+/* --- 系统Ios原生图标 --- */
+.statusbar-icon-selector .icon-Ioslocat { background-image: url('../icons/IoslocatIcon.png'); }
+.statusbar-icon-selector .icon-Iosalarm    { background-image: url('../icons/IosalarmIcon.png'); }
+.statusbar-icon-selector .icon-Iosbell     { background-image: url('../icons/IosBellIcon.png'); }
+.statusbar-icon-selector .icon-Iosuser     { background-image: url('../icons/IosuserIcon.png'); }
+.statusbar-icon-selector .icon-Iossleep    { background-image: url('../icons/IossleepIcon.png'); }
+.statusbar-icon-selector .icon-Ioswifi     { background-image: url('../icons/IosWifiIcon.png'); }
+.statusbar-icon-selector .icon-Iosltea      { background-image: url('../icons/IoslteaIcon.png'); }
+.statusbar-icon-selector .icon-Ioslteb      { background-image: url('../icons/IosltebIcon.png'); }
+.statusbar-icon-selector .icon-Ioslte5Ga      { background-image: url('../icons/Ioslte5GaIcon.png'); }
+
+
+/* --- 系统原生图标 --- */
+.statusbar-icon-selector .icon-chat  { background-image: url('../icons/chatIcon.png'); }
+.statusbar-icon-selector .icon-wifia     { background-image: url('../icons/WifiArrowIcon.png'); }
+.statusbar-icon-selector .icon-lte4Ga      { background-image: url('../icons/lte4GaIcon.png'); }
+.statusbar-icon-selector .icon-lte4Gb      { background-image: url('../icons/lte4GbIcon.png'); }
+.statusbar-icon-selector .icon-lte3G      { background-image: url('../icons/lte3GIcon.png'); }
+.statusbar-icon-selector .icon-lte5Gb      { background-image: url('../icons/lte5GbIcon.png'); }
+.statusbar-icon-selector .icon-Phone      { background-image: url('../icons/PhoneIcon.png'); }
+.statusbar-icon-selector .icon-Alipay { background-image: url('../icons/AlipayIcon.png'); }
+.statusbar-icon-selector .icon-Taobao { background-image: url('../icons/TaobaoIcon.png'); }
+.statusbar-icon-selector .icon-Wechat { background-image: url('../icons/WechatIcon.png'); }
+.statusbar-icon-selector .icon-Weibo { background-image: url('../icons/WeiboIcon.png'); }
+.statusbar-icon-selector .icon-Zhihu { background-image: url('../icons/ZhihuIcon.png'); }
+
+/* --- 第三方应用图标 --- */
+.statusbar-icon-selector .icon-12306 { background-image: url('../icons/radius/12306Icon.png'); }
+.statusbar-icon-selector .icon-163music { background-image: url('../icons/radius/163musicIcon.png'); }
+.statusbar-icon-selector .icon-alidrive { background-image: url('../icons/radius/AlidriveIcon.png'); }
+.statusbar-icon-selector .icon-atuin { background-image: url('../icons/radius/AtuinIcon.png'); }
+.statusbar-icon-selector .icon-baidu { background-image: url('../icons/radius/BaiduIcon.png'); }
+.statusbar-icon-selector .icon-baidudrivea { background-image: url('../icons/radius/BaidudriveaIcon.png'); }
+.statusbar-icon-selector .icon-baidudriveb { background-image: url('../icons/radius/BaidudrivebIcon.png'); }
+.statusbar-icon-selector .icon-bilibili { background-image: url('../icons/radius/BilibiliIcon.png'); }
+.statusbar-icon-selector .icon-chrome { background-image: url('../icons/radius/ChromeIcon.png'); }
+.statusbar-icon-selector .icon-doubao { background-image: url('../icons/radius/DoubaoIcon.png'); }
+.statusbar-icon-selector .icon-dsvideo { background-image: url('../icons/radius/DsvideoIcon.png'); }
+.statusbar-icon-selector .icon-edge { background-image: url('../icons/radius/EdgeIcon.png'); }
+.statusbar-icon-selector .icon-flclash { background-image: url('../icons/radius/FlclashIcon.png'); }
+.statusbar-icon-selector .icon-google { background-image: url('../icons/radius/GoogleIcon.png'); }
+.statusbar-icon-selector .icon-googlecloud { background-image: url('../icons/radius/GooglecloudIcon.png'); }
+.statusbar-icon-selector .icon-googledrive { background-image: url('../icons/radius/GoogledriveIcon.png'); }
+.statusbar-icon-selector .icon-googlemap { background-image: url('../icons/radius/GooglemapIcon.png'); }
+.statusbar-icon-selector .icon-iptv { background-image: url('../icons/radius/IptvIcon.png'); }
+.statusbar-icon-selector .icon-kmplayer { background-image: url('../icons/radius/KmplayerIcon.png'); }
+.statusbar-icon-selector .icon-miwifi { background-image: url('../icons/radius/MiwifiIcon.png'); }
+.statusbar-icon-selector .icon-office { background-image: url('../icons/radius/OfficeIcon.png'); }
+.statusbar-icon-selector .icon-onedev { background-image: url('../icons/radius/OnedevIcon.png'); }
+.statusbar-icon-selector .icon-palworld { background-image: url('../icons/radius/PalworldIcon.png'); }
+
 
 /* =============================================== */
 /* 商户头像图片选择器样式
@@ -190,4 +282,40 @@ textarea.control:focus {
 .merchant-icon-option.selected {
     border-color: var(--theme-color); /* 边框变为主题蓝色 */
     box-shadow: 0 0 10px rgba(0, 123, 255, 0.5); /* 添加外发光效果 */
+}
+
+/*
+ * 美化文件上传按钮的样式
+ */
+.button-like-label {
+    display: inline-block;
+    padding: 8px 16px;
+    font-size: 14px;
+    color: #fff;
+    background-color: #dee2e6; /* 一个友好的蓝色，您可以换成您喜欢的主题色 */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    text-align: center;
+    
+}
+
+.button-like-label:hover {
+    background-color: #009dff; /* 鼠标悬停时的颜色 */
+}
+
+/*
+ * 用于显示已选文件名的样式
+ */
+.file-name-display {
+    margin-left: 12px;
+    font-size: 14px;
+    color: #666;
+    /* 防止文件名过长时换行 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px; /* 限制最大宽度 */
+    vertical-align: middle; /* 与按钮垂直对齐 */
 }

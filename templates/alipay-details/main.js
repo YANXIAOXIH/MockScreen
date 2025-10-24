@@ -1,15 +1,166 @@
+/**
+ * @file 支付宝账单详情页 - 模板模块 (已升级)
+ * @description
+ * 定义了“支付宝账单详情页”模板的所有专属配置、UI控件、交互逻辑和 Canvas 绘制方法。
+ * [V2] 状态栏系统已升级，采用全局图标库和三区域拖放排序功能。
+ * 模板原有的账单管理联动、支付奖励选择等功能均已保留。
+ */
+
 import { drawRoundedRect, drawWrappedText } from '../../js/utils.js';
+
+// --- 模块级状态变量 (新) ---
+// 用于实时存储用户在状态栏左右两侧区域排列的图标ID顺序。
+let leftIconOrder = [];
+let rightIconOrder = [];
 
 /**
  * 模板专属的初始化函数。
- * 当模板被加载时，此函数会被主程序调用，用于绑定所有交互事件。
- * @param {function} drawCanvas - 主绘图函数的回调。
+ * 在模板加载后由主应用调用，负责为该模板的动态HTML控件绑定所有特殊的交互事件。
+ * @param {function} drawCanvas - 对主绘图函数的回调引用，用于在交互后触发画布重绘。
  */
 export function initialize(drawCanvas) {
     const container = document.getElementById('template-controls-container');
     if (!container) return;
 
-    // --- 支付宝账单管理联动 ---
+
+   // --- 1. 获取核心 DOM 元素 ---
+    const leftDropzone = container.querySelector('#left-icons-dropzone');
+    const rightDropzone = container.querySelector('#right-icons-dropzone');
+    const availableDropzone = container.querySelector('#available-icons-dropzone');
+    if (!leftDropzone || !rightDropzone || !availableDropzone) return;
+    
+    // --- 2. 定义辅助函数 ---
+
+    /**
+     * 从 DOM 中读取并更新左右两侧的图标顺序数组。
+     */
+    const updateAllOrders = () => {
+        leftIconOrder = Array.from(leftDropzone.querySelectorAll('.icon-option')).map(icon => icon.dataset.target);
+        rightIconOrder = Array.from(rightDropzone.querySelectorAll('.icon-option')).map(icon => icon.dataset.target);
+    };
+
+    /**
+     * 同步图标的视觉状态（是否激活）与其背后隐藏的复选框（checkbox）的 `checked` 状态。
+     * 这是将 UI 表现与实际数据（是否绘制）关联起来的关键。
+     * @param {HTMLElement} icon - 被操作的图标元素。
+     * @param {boolean} isActive - 图标是否应处于激活状态。
+     */
+    const syncCheckboxState = (icon, isActive) => {
+        const checkbox = container.querySelector(`.control[data-id="${icon.dataset.target}"]`);
+        if (checkbox) {
+            checkbox.checked = isActive;
+            icon.classList.toggle('active', isActive);
+            // 手动触发 input 事件，确保主应用的 drawCanvas 函数能够接收到状态变更。
+            checkbox.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    };
+    
+    // --- 3. 初始化图标位置 ---
+    // 遍历所有图标，如果其对应的隐藏复选框默认是 checked 状态，则将其从“图标库”移动到对应的状态栏区域。
+    availableDropzone.querySelectorAll('.icon-option[data-draggable="true"]').forEach(icon => {
+        const checkbox = container.querySelector(`.control[data-id="${icon.dataset.target}"]`);
+        if (checkbox && checkbox.checked) {
+            const targetId = icon.dataset.target.toLowerCase();
+            // 根据图标类型，智能判断应该放入左侧还是右侧
+            if (targetId.includes('lte') || targetId.includes('wifi') || targetId.includes('5g')) {
+                rightDropzone.appendChild(icon);
+            } else {
+                leftDropzone.appendChild(icon);
+            }
+            icon.classList.add('active');
+        }
+    });
+    updateAllOrders(); // 更新初始顺序
+
+    // --- 4. 实现图标的拖放（Drag & Drop）功能 ---
+    let draggedItem = null; // 用于在拖放操作期间引用被拖动的元素
+
+    // 使所有可拖动的图标都具有 draggable 属性
+    container.querySelectorAll('.icon-option[data-draggable="true"]').forEach(icon => { icon.draggable = true; });
+    
+    // 使用事件委托，在父容器上监听拖拽开始事件
+    container.addEventListener('dragstart', (event) => {
+        if (event.target.matches('.icon-option[data-draggable="true"]')) {
+            draggedItem = event.target;
+            // 使用 setTimeout 让浏览器有时间响应拖拽开始，然后再改变元素样式
+            setTimeout(() => { if(draggedItem) draggedItem.style.opacity = '0.5'; }, 0);
+        }
+    });
+
+    // 拖拽结束时，清理状态并重绘
+    container.addEventListener('dragend', () => {
+        if (draggedItem) {
+            draggedItem.style.opacity = '1';
+            draggedItem = null;
+            [leftDropzone, rightDropzone, availableDropzone].forEach(z => z.classList.remove('drag-over'));
+            updateAllOrders(); // 拖拽结束后，务必更新图标顺序
+            drawCanvas();      // 并重绘 Canvas
+        }
+    });
+
+    // 为所有三个可放置区域添加拖放事件监听
+    [leftDropzone, rightDropzone, availableDropzone].forEach(zone => {
+        zone.addEventListener('dragover', (event) => {
+            event.preventDefault(); // 必须阻止默认行为，才能触发 drop 事件
+            zone.classList.add('drag-over');
+        });
+        zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+        zone.addEventListener('drop', (event) => {
+            event.preventDefault();
+            zone.classList.remove('drag-over');
+            if (!draggedItem) return;
+
+            // 计算拖放位置，实现平滑插入排序效果
+            const afterElement = getDragAfterElement(zone, event.clientX);
+            if (afterElement) {
+                zone.insertBefore(draggedItem, afterElement);
+            } else {
+                zone.appendChild(draggedItem);
+            }
+            
+            // 如果图标被拖入“图标库”，则视为“取消激活”，否则视为“激活”
+            syncCheckboxState(draggedItem, zone !== availableDropzone);
+        });
+    });
+
+    /**
+     * 计算在容器中，当前鼠标位置后面应该跟随哪个元素。
+     * @param {HTMLElement} container - 放置区容器。
+     * @param {number} x - 鼠标的水平坐标。
+     * @returns {HTMLElement|null} 返回应该被插入的元素，如果应插在末尾则返回 null。
+     */
+    function getDragAfterElement(container, x) {
+        const draggableElements = [...container.querySelectorAll('.icon-option:not([style*="opacity: 0.5"])')];
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = x - box.left - box.width / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    // --- 5. 实现图标的快捷点击切换功能 ---
+    container.addEventListener('click', (event) => {
+        const clickedIcon = event.target.closest('.icon-option[data-draggable="true"]');
+        if (!clickedIcon) return;
+
+        // 如果图标在“图标库”中，点击则默认添加到左侧
+        if (clickedIcon.parentElement === availableDropzone) {
+            leftDropzone.appendChild(clickedIcon);
+            syncCheckboxState(clickedIcon, true);
+        } else { // 如果图标已在状态栏中，点击则送回“图标库”
+            availableDropzone.appendChild(clickedIcon);
+            syncCheckboxState(clickedIcon, false);
+        }
+        updateAllOrders();
+        drawCanvas();
+    });
+
+
+    // --- 2. [保留] 支付宝账单管理联动 ---
     const managementRadios = container.querySelectorAll('input[name="billManagementChoiceRadios"]');
     const categoryNameInput = container.querySelector('input[data-id="billCategoryName"]');
     const hiddenChoiceInput = container.querySelector('input[data-id="billManagementChoice"]');
@@ -27,7 +178,7 @@ export function initialize(drawCanvas) {
         if (checkedRadio) updateBillCategory(checkedRadio);
     }
     
-    // --- 支付宝支付奖励联动 ---
+    // --- 3. [保留] 支付宝支付奖励联动 ---
     const rewardRadios = container.querySelectorAll('input[name="paymentRewardChoiceRadios"]');
     const hiddenRewardInput = container.querySelector('input[data-id="paymentRewardChoice"]');
     if (rewardRadios.length > 0 && hiddenRewardInput) {
@@ -42,7 +193,7 @@ export function initialize(drawCanvas) {
         if(checkedRewardRadio) updateReward(checkedRewardRadio);
     }
 
-    // --- 商户头像选择器逻辑 ---
+    // --- 4. [保留] 商户头像选择器逻辑 ---
     const merchantIconSelector = container.querySelector('.merchant-icon-selector');
     const merchantHiddenInput = container.querySelector('[data-id="merchantIconSelection"]');
     if (merchantIconSelector && merchantHiddenInput) {
@@ -57,119 +208,25 @@ export function initialize(drawCanvas) {
             });
         });
     }
-    
-    // --- 核心逻辑: 状态栏图标点击切换 ---
-    const statusBarIconOptions = container.querySelectorAll('.icon-option');
-    statusBarIconOptions.forEach(icon => {
-        const targetId = icon.dataset.target;
-        const checkbox = container.querySelector(`.control[data-id="${targetId}"]`);
-        
-        if (checkbox && checkbox.checked) {
-            icon.classList.add('active');
-        }
-
-        icon.addEventListener('click', (event) => {
-            const clickedIcon = event.currentTarget;
-            const targetCheckbox = container.querySelector(`.control[data-id="${clickedIcon.dataset.target}"]`);
-            if (!targetCheckbox) return;
-
-            clickedIcon.classList.toggle('active');
-            targetCheckbox.checked = clickedIcon.classList.contains('active');
-            
-            const clickedTarget = clickedIcon.dataset.target;
-            const isNowActive = clickedIcon.classList.contains('active');
-
-            if (clickedTarget === 'wifiIconToggle' && isNowActive) {
-                const lteIcon = container.querySelector('.icon-option[data-target="lteIconToggle"]');
-                const lteCheckbox = container.querySelector('.control[data-id="lteIconToggle"]');
-                if (lteIcon && lteCheckbox) {
-                    lteIcon.classList.remove('active');
-                    lteCheckbox.checked = false;
-                }
-            }
-            if (clickedTarget === 'lteIconToggle' && isNowActive) {
-                const wifiIcon = container.querySelector('.icon-option[data-target="wifiIconToggle"]');
-                const wifiCheckbox = container.querySelector('.control[data-id="wifiIconToggle"]');
-                if (wifiIcon && wifiCheckbox) {
-                    wifiIcon.classList.remove('active');
-                    wifiCheckbox.checked = false;
-                }
-            }
-            targetCheckbox.dispatchEvent(new Event('input'));
-        });
-    });
-
-    // --- 核心逻辑: 左侧状态栏图标拖拽排序 ---
-    const iconContainer = container.querySelector('.statusbar-icon-selector');
-    if (iconContainer) {
-        const draggableIcons = iconContainer.querySelectorAll('.icon-option[data-draggable="true"]');
-        draggableIcons.forEach(icon => icon.draggable = true);
-
-        let draggedItem = null;
-
-        iconContainer.addEventListener('dragstart', (event) => {
-            if (event.target.dataset.draggable) {
-                draggedItem = event.target;
-                setTimeout(() => { if (draggedItem) draggedItem.style.opacity = '0.5'; }, 0);
-            }
-        });
-
-        iconContainer.addEventListener('dragend', () => {
-            if (draggedItem) {
-                draggedItem.style.opacity = '1';
-                draggedItem = null;
-                drawCanvas(); 
-            }
-        });
-
-        iconContainer.addEventListener('dragover', (event) => {
-            event.preventDefault();
-            if (!draggedItem) return;
-
-            const afterElement = getDragAfterElement(iconContainer, event.clientX);
-            const firstNonDraggable = iconContainer.querySelector('.icon-option:not([data-draggable="true"]), .icon-spacer');
-            
-            if (afterElement == null) {
-                if (firstNonDraggable) iconContainer.insertBefore(draggedItem, firstNonDraggable);
-                else iconContainer.appendChild(draggedItem);
-            } else {
-                iconContainer.insertBefore(draggedItem, afterElement);
-            }
-        });
-
-        function getDragAfterElement(container, x) {
-            const draggableElements = [...container.querySelectorAll('.icon-option[data-draggable="true"]:not([style*="opacity: 0.5"])')];
-            return draggableElements.reduce((closest, child) => {
-                const box = child.getBoundingClientRect();
-                const offset = x - box.left - box.width / 2;
-                if (offset < 0 && offset > closest.offset) {
-                    return { offset: offset, element: child };
-                } else {
-                    return closest;
-                }
-            }, { offset: Number.NEGATIVE_INFINITY }).element;
-        }
-    }
 }
 
+/**
+ * 导出的模板定义对象。
+ */
 export const template = {
+    // [升级] 模板主题，用于主应用加载 'nighi' 风格的通用图标。
+    theme: 'night',
+    
+    // [升级] 模板专属资源。移除了所有状态栏图标。
     assets: {
-        // 状态栏图标
-        locationIcon: 'icons/IoslocatnighiIcon.png',
-        alarmIcon: 'icons/IosalarmnighiIcon.png',
-        bellIcon: 'icons/IosBellnighiIcon.png',
-        userIcon: 'icons/IosusernighiIcon.png',
-        sleepIcon: 'icons/IossleepnighiIcon.png',
-        wifiIcon: 'icons/IosWifinighiIcon.png',
-        lteIcon: 'icons/Ios5GnighiIcon.png',
+        bg: 'templates/alipay-details/icons/background.png',
         // 商户图标
         defaultMerchantIcon1: 'icons/merchanticon1.png', 
         defaultMerchantIcon2: 'icons/merchanticon2.png',
         defaultMerchantIcon3: 'icons/merchanticon3.png',
         defaultMerchantIcon4: 'icons/merchanticon4.png',
         defaultMerchantIcon5: 'icons/merchanticon5.png',
-        // 背景与其他资源
-        bg: 'templates/alipay-details/icons/background.png',
+        // 账单管理与支付奖励资源
         billManagementStyle1: 'templates/alipay-details/icons/bill-management-1.png',
         billManagementStyle2: 'templates/alipay-details/icons/bill-management-2.png',
         billManagementStyle3: 'templates/alipay-details/icons/bill-management-3.png',
@@ -184,20 +241,20 @@ export const template = {
         canvasWidth: 1290,                  // [画布] 画布的总宽度 (px)
         canvasHeight: 2796,                 // [画布] 画布的总高度 (px)
         
-        statusBar: {
+        // [状态栏] 相关配置
+        statusBar: { 
             baseY: 88,                      // [状态栏] 所有元素的垂直对齐基线Y坐标
-            timeX: 148,                     // [状态栏] 时间文本的起始X坐标
+            timeX: 140,                     // [状态栏] 时间文本的起始X坐标
             timeFont: 'bold 50px "PingFang"',// [状态栏] 时间文本的字体样式
             iconstartX: 290,                // [状态栏] 左侧第一个图标的起始X坐标
-            iconHeight: 35,                 // [状态栏] 左侧图标的统一高度
+            iconHeight: 36,                 // [状态栏] 左侧图标的统一高度
             IconGap: 20,                    // [状态栏] 图标之间的水平间隙
             signalIconHeight: 42,           // [状态栏] 右侧信号类图标(Wi-Fi, LTE)的高度
-            signalIconGapToBattery: 25,     // [状态栏] 最右侧信号图标与电池图标之间的间距
+            signalIconGapToBattery: 22,     // [状态栏] 最右侧信号图标与电池图标之间的间距
             batteryX: 1087,                 // [状态栏] 电池图标外框的起始X坐标
             batteryWidth: 80,               // [状态栏] 电池图标外框的总宽度
-            batteryHeight: 37               // [状态栏] 电池图标外框的总高度
+            batteryHeight: 38               // [状态栏] 电池图标外框的总高度
         },
-        
         mainCard: { 
             shopIconY: 383,                 // [核心卡片] 商户图标的顶部Y坐标
             shopiconsize: 138,              // [核心卡片] 商户图标的尺寸 (宽度和高度)
@@ -206,7 +263,6 @@ export const template = {
             amountY: 725,                   // [核心卡片] 支付金额文本的Y坐标
             amountFont: 'bold 110px "AlipayNumber"',// [核心卡片] 支付金额文本的字体样式
         },
-
         detailsList: { 
             startY: 980,                    // [详情列表] 列表第一行的起始Y坐标 (整体位置)
             rowHeight: 105,                 // [详情列表] 每一行的基础高度，即行间距
@@ -221,7 +277,6 @@ export const template = {
             rewardImageWidth: 490,          // [详情列表] "支付奖励"图片的宽度
             rewardImageHeight: 109          // [详情列表] "支付奖励"图片的高度
         },
-
         bottomModules: {
             managementY: 2270,              // [底部模块] "账单管理" 图片的顶部Y坐标
             managementX: 56,                // [底部模块] "账单管理" 图片的左侧X坐标
@@ -232,39 +287,23 @@ export const template = {
             categoryLabelColor: '#333333',  // [底部模块] "账单分类" 左侧标签的颜色
             categoryValueColor: '#999999',  // [底部模块] "账单分类" 右侧值的颜色
         },
-
         colors: { 
             statusBar: '#000000'            // [颜色] 状态栏所有元素的颜色
         }
     },
 
+    /**
+     * @returns {string} 返回用于生成此模板控制面板的 HTML 字符串。
+     */
     getControlsHTML: () => `
         <fieldset>
             <legend>顶部状态栏</legend>
-            <!-- [修改] 调整HTML结构以支持拖拽和统一的事件处理 -->
-            <div class="input-group">
-                <label>状态栏图标 (可拖拽排序)</label>
-                <div class="statusbar-icon-selector">
-                    <div class="icon-option icon-location" data-target="locationToggle" data-draggable="true"></div>
-                    <div class="icon-option icon-alarm" data-target="alarmIconToggle" data-draggable="true"></div>
-                    <div class="icon-option icon-bell" data-target="bellIconToggle" data-draggable="true"></div>
-                    <div class="icon-option icon-user" data-target="userIconToggle" data-draggable="true"></div>
-                    <div class="icon-option icon-sleep" data-target="sleepIconToggle" data-draggable="true"></div>
-                    <div class="icon-spacer" style="flex-grow: 1;"></div>
-                    <div class="icon-option icon-wifi" data-target="wifiIconToggle"></div>
-                    <div class="icon-option icon-lte active" data-target="lteIconToggle"></div>
-                </div>
-            </div>
-            <input type="checkbox" class="control" data-id="locationToggle" style="display: none;">
-            <input type="checkbox" class="control" data-id="alarmIconToggle" style="display: none;">
-            <input type="checkbox" class="control" data-id="bellIconToggle" style="display: none;">
-            <input type="checkbox" class="control" data-id="userIconToggle" style="display: none;">
-            <input type="checkbox" class="control" data-id="sleepIconToggle" style="display: none;">
-            <input type="checkbox" class="control" data-id="wifiIconToggle" style="display: none;">
-            <input type="checkbox" class="control" data-id="lteIconToggle" checked style="display: none;">
-            
+            <!-- ICON_CONTROLS_PLACEHOLDER -->
             <div class="input-group"><label>时间</label><input type="time" class="control" data-id="time" value="21:10"></div>
-            <div class="input-group"><label>电池电量: <span class="control-value" data-id="batteryValue">36</span>%</label><input type="range" class="control" data-id="battery" min="0" max="100" value="36"></div>
+            <div class="input-group">
+                <label>电池电量: <span class="control-value" data-id="batteryValue">36</span>%</label>
+                <input type="range" class="control" data-id="battery" min="0" max="100" value="36">
+            </div>
         </fieldset>
         
         <fieldset>
@@ -282,17 +321,22 @@ export const template = {
                 </div>
                 <input type="hidden" class="control" data-id="merchantIconSelection" value="defaultMerchantIcon1">
             </div>
-            <div class="input-group"><label>上传自定义头像</label><input type="file" class="control" data-id="merchantIcon"></div>
+            <div class="input-group">
+                <label>上传自定义头像</label>
+                <div>
+                    <input type="file" class="control" data-id="merchantIcon" id="merchantIconUpload" style="display: none;">
+                    <label for="merchantIconUpload" class="button-like-label">选择文件</label>
+                    <span class="file-name-display" data-id="merchantIconFileName"></span>
+                </div>
+            </div>
         </fieldset>
         
         <fieldset>
             <legend>账单列表</legend>
-            <!-- [修改] 恢复为单个 datetime-local 输入框，与微信模板保持一致 -->
             <div class="input-group">
                 <label>支付时间</label>
                 <input type="datetime-local" class="control" data-id="paymentTime" value="2025-10-20T17:06">
             </div>
-
             <div class="input-group">
                 <label>付款方式</label>
                 <input type="text" class="control" data-id="paymentMethod" value="邮储银行储蓄卡(1369)">
@@ -330,12 +374,15 @@ export const template = {
         </fieldset>
     `,
 
+    /**
+     * 模板的核心绘制函数。
+     */
     draw: (ctx, config, controls, assets) => {
         if (!assets.bg) return;
         ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
         ctx.drawImage(assets.bg, 0, 0);
 
-        // --- 1. 绘制状态栏 ---
+        // --- 1. [升级] 绘制状态栏 ---
         const st = config.statusBar;
         ctx.fillStyle = config.colors.statusBar;
         ctx.font = st.timeFont;
@@ -343,44 +390,34 @@ export const template = {
         ctx.textBaseline = 'middle';
         ctx.fillText(controls.time, st.timeX, st.baseY);
 
-        // --- [修改] 核心绘制逻辑: 左侧可排序图标 ---
+        // --- 绘制左侧图标 (数据源: leftIconOrder 数组) ---
         let currentIconX = st.iconstartX;
         const iconY = st.baseY - (st.iconHeight / 2);
-        const iconContainer = document.querySelector('.statusbar-icon-selector');
-        if (iconContainer) {
-            const orderedDraggableElements = Array.from(iconContainer.querySelectorAll('.icon-option[data-draggable="true"]'));
-            const draggableIconMap = {
-                locationToggle: assets.locationIcon, alarmIconToggle: assets.alarmIcon, bellIconToggle: assets.bellIcon,
-                userIconToggle: assets.userIcon, sleepIconToggle: assets.sleepIcon,
-            };
-            const visibleIconsToDraw = orderedDraggableElements.filter(el => controls[el.dataset.target] && draggableIconMap[el.dataset.target]);
-            visibleIconsToDraw.forEach(el => {
-                const asset = draggableIconMap[el.dataset.target];
-                if (asset) {
-                    const calculatedWidth = st.iconHeight * (asset.width / asset.height);
-                    ctx.drawImage(asset, currentIconX, iconY, calculatedWidth, st.iconHeight);
-                    currentIconX += calculatedWidth + st.IconGap;
-                }
-            });
-        }
-        
-        // --- 绘制右侧固定图标 ---
-        let currentSignalX = st.batteryX;
-        const iconY_signal = st.baseY - (st.signalIconHeight / 2);
-        if (controls.wifiIconToggle && assets.wifiIcon) {
-            const asset = assets.wifiIcon;
-            const calculatedWidth = st.signalIconHeight * (asset.width / asset.height);
-            const iconX = currentSignalX - st.signalIconGapToBattery - calculatedWidth;
-            ctx.drawImage(asset, iconX, iconY_signal, calculatedWidth, st.signalIconHeight);
-            currentSignalX = iconX;
-        }
-        if (controls.lteIconToggle && assets.lteIcon) {
-            const asset = assets.lteIcon;
-            const calculatedWidth = st.signalIconHeight * (asset.width / asset.height);
-            const iconX = currentSignalX - st.IconGap - calculatedWidth;
-            ctx.drawImage(asset, iconX, iconY_signal, calculatedWidth, st.signalIconHeight);
-        }
+        leftIconOrder.forEach(targetId => {
+            const assetKey = targetId.replace('Toggle', '');
+            const asset = assets[assetKey];
+            if (asset && controls[targetId]) {
+                const calculatedWidth = st.iconHeight * (asset.width / asset.height);
+                ctx.drawImage(asset, currentIconX, iconY, calculatedWidth, st.iconHeight);
+                currentIconX += calculatedWidth + st.IconGap;
+            }
+        });
 
+        // --- 绘制右侧图标 (数据源: rightIconOrder 数组) ---
+        let currentSignalX = st.batteryX - st.signalIconGapToBattery;
+        rightIconOrder.forEach(targetId => {
+            const assetKey = targetId.replace('Toggle', '');
+            const asset = assets[assetKey]; 
+            const iconHeight = st.signalIconHeight;
+            const signalIconY = st.baseY - (iconHeight / 2);
+            if (asset && controls[targetId]) {
+                const calculatedWidth = iconHeight * (asset.width / asset.height);
+                const iconX = currentSignalX - calculatedWidth;
+                ctx.drawImage(asset, iconX, signalIconY, calculatedWidth, iconHeight);
+                currentSignalX = iconX - st.IconGap;
+            }
+        });
+        
         // --- 绘制电池 ---
         const batteryY = st.baseY - st.batteryHeight / 2;
         if (controls.battery > 0) {
@@ -389,7 +426,7 @@ export const template = {
             ctx.fill();
         }
 
-        // --- 2. 绘制中间核心信息卡片  ---
+        // --- 2. [保留] 绘制中间核心信息卡片 ---
         const mc = config.mainCard;
         let iconToDraw = controls.merchantIcon || (controls.merchantIconSelection && assets[controls.merchantIconSelection]);
         if (iconToDraw) {
@@ -406,9 +443,9 @@ export const template = {
         ctx.font = mc.shopNameFont; ctx.fillStyle = '#333333'; ctx.textAlign = 'center';
         ctx.fillText(controls.shopName, config.canvasWidth / 2, mc.shopNameY);
         ctx.font = mc.amountFont;
-        ctx.fillText(`-${parseFloat(controls.amount).toFixed(2)}`, config.canvasWidth / 2, mc.amountY);
+        ctx.fillText(`-${parseFloat(controls.amount || 0).toFixed(2)}`, config.canvasWidth / 2, mc.amountY);
         
-        // --- 3. 绘制底部详情列表  ---
+        // --- 3. [保留] 绘制底部详情列表 ---
         const dl = config.detailsList; 
         ctx.textAlign = 'left'; 
         ctx.textBaseline = 'middle';
@@ -428,18 +465,21 @@ export const template = {
             } else { 
                 ctx.fillText(value, dl.rightX, currentY); 
             }
-            currentY += dl.rowHeight + 2;
+            // 动态计算行高
+            if (label === '收款方全称') {
+                const lineCount = Math.ceil(ctx.measureText(value).width / (config.canvasWidth - dl.rightX - dl.leftX));
+                currentY += (lineCount > 1) ? (lineCount * dl.multiLineHeight + (dl.rowHeight - dl.multiLineHeight)) : dl.rowHeight;
+            } else {
+                 currentY += dl.rowHeight;
+            }
         };
         
-        // --- [修改] 在绘制前格式化支付时间并动态生成秒数 ---
         let formattedPaymentTime = '';
-        if (controls.paymentTime) { // 值是 "2025-10-20T17:06"
+        if (controls.paymentTime) {
             const randomSeconds = Math.floor(Math.random() * 60).toString().padStart(2, '0');
-            // 将 'T' 替换为空格，并拼接上随机秒数
             formattedPaymentTime = `${controls.paymentTime.replace('T', ' ')}:${randomSeconds}`;
         }
         drawRow('支付时间', formattedPaymentTime); 
-        
         drawRow('付款方式', controls.paymentMethod, true);
         drawRow('商品说明', controls.productDesc);
         
@@ -458,7 +498,7 @@ export const template = {
         drawRow('收款方全称', controls.payeeFullName);
         drawRow('推荐服务', '');
 
-        // --- 4. 绘制最下方的模块 ---
+        // --- 4. [保留] 绘制最下方的模块 ---
         const bm = config.bottomModules;
 
         if (controls.billManagementChoice === 'style1' && assets.billManagementStyle1) {
